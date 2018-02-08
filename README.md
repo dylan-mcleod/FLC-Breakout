@@ -18,6 +18,7 @@ INSTALLING DEPENDENCIES:
 4. Type the following commands into the command line:
 
 pip install pysdl2
+
 pip install pygame
 
 
@@ -28,8 +29,7 @@ INSTALLING THIS REPOSITORY:
 2. Download and install git (https://git-scm.com/downloads)
 3. Download and install the github client (https://desktop.github.com/)
 4. Clone this repository using "Open in Desktop" (https://github.com/dylan-mcleod/FLC-Breakout)
-5. There should be a button on the github client to pull/fetch changes, 
-		which you can use to download the changes made to this repository (We'll probably go over git during the next meeting)
+5. There should be a button on the github client to pull/fetch changes, which you can use to download the changes made to this repository (We'll probably go over git during the next meeting)
 
 
 
