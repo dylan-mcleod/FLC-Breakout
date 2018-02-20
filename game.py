@@ -147,7 +147,8 @@ class Wall(Entity):
 class GameState:
 
 	def __init__(self):
-
+		self.paused = False
+		
 		self.balls = []
 		self.paddles = []
 		self.entities = []
@@ -178,9 +179,9 @@ class GameState:
 
 
 	def update(self, delta):
-
-		for e in self.entities:
-			e.update(delta)
+		if not self.paused:
+			for e in self.entities:
+				e.update(delta)
 
 
 
@@ -190,6 +191,15 @@ class GameState:
 		
 		for e in self.entities:
 			e.draw()
+
+
+	def pause(self):
+		self.paused = True
+
+
+	def resume(self):
+		self.paused = False
+
 
 
 
@@ -203,7 +213,8 @@ class StateManager:
 		self.states = dict()
 		self.currentState = None
 
-		self.FPS = 60
+		self.targetFPS = 60
+		self.minFPS = 15
 		self.clock = pygame.time.Clock()
 
 	def addState(self, name, state):
@@ -218,8 +229,11 @@ class StateManager:
 		self.clock.tick(60)
 		while(running and (not (self.currentState is None))):
 			
-			# ticks 60 times per second, divided by 1000 to convert ms to s
-			delta = self.clock.tick(60) / 1000.0
+			# ticks targetFPS times per second, divided by 1000 to convert ms to s
+			delta = self.clock.tick(self.targetFPS) / 1000.0
+			#protection against extremely low fps
+			if delta > (1.0 / self.minFPS):
+				self.currentState.pause()
 
 			self.currentState.update(delta)
 			self.currentState.render()
@@ -233,6 +247,9 @@ class StateManager:
 				if event.type == KEYDOWN:
 					if event.key == K_ESCAPE:
 						running = False
+					#Here for now
+					if event.key == K_SPACE:
+						self.currentState.resume()
 				elif event.type == QUIT:
 					running = False
 
