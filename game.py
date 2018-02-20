@@ -18,12 +18,11 @@ class Entity:
 		self.sprite = pygame.sprite.Sprite()
 		self.sprite.image = image
 
-		# bounding box for this Entity is considered to be equivalent the bounding box for the sprite
-		self.bounds = self.sprite.image.get_rect()
+		self.imageBounds = self.sprite.image.get_rect()
 
-		# These two variables store x and y continuously (float), while bounds only stores integer precision (it's dumb but i didn't write pygame)
-		self.x = self.bounds.x
-		self.y = self.bounds.y
+		# These two variables store x and y continuously (float), while imageBounds only stores integer precision (it's dumb but i didn't write pygame)
+		self.x = self.imageBounds.x
+		self.y = self.imageBounds.y
 
 		self.setVelocity(0,0)
 
@@ -32,15 +31,15 @@ class Entity:
 		self.x = x
 		self.y = y
 
-		self.bounds.x = x
-		self.bounds.y = y
+		self.imageBounds.x = x
+		self.imageBounds.y = y
 
 	def move(self, dx, dy):
 		self.x += dx
 		self.y += dy
 
-		self.bounds.x = self.x
-		self.bounds.y = self.y
+		self.imageBounds.x = self.x
+		self.imageBounds.y = self.y
 
 
 	def setVelocity(self, vx, vy):
@@ -58,7 +57,7 @@ class Entity:
 
 
 	def draw(self):
-		screen.blit(self.sprite.image, self.bounds)
+		screen.blit(self.sprite.image, self.imageBounds)
 
 
 	# Super special update function that you can overwrite as you please
@@ -71,9 +70,9 @@ class Entity:
 	# Collision Handling #
 	######################
 
-	# Check if this intersects another thing, not implemented
+	# Currently uses image bounds, which is probably incorrect
 	def intersects(self, other):
-		return self.bounds.colliderect(other.bounds)
+		return self.imageBounds.colliderect(other.imageBounds)
 
 
 	# These functions do nothing, they must be implemented by children
