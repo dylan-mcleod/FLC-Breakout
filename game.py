@@ -91,12 +91,9 @@ class Entity:
 class Ball(Entity):
 
 	def __init__(self):
-		surf = pygame.Surface((30,30))
+		surf = pygame.Surface((15,15))
 		surf.fill((255,255,255))
 		Entity.__init__(self, surf)
-
-		self.setVelocity(100,150)
-		self.setPosition(400,300)
 
 
 	# Temporary behavior that has it bouncing along walls and stuff
@@ -107,12 +104,74 @@ class Ball(Entity):
 		if(self.y <= 0 or self.y >= 600):
 			self.setVelocity( self.vx, -self.vy)
 
+class Paddle(Entity):
+
+	def __init__(self):
+		surf = pygame.Surface((100,30))
+		surf.fill((255,255,255))
+		Entity.__init__(self, surf)
+
+	# implement player controls
+	def behavior(self):
+		return
+
+	def collideWithBall(self, ball):
+		return
+
+class Brick(Entity):
+
+	def __init__(self):
+		surf = pygame.Surface((40,15))
+		surf.fill((255,0,0))
+		Entity.__init__(self, surf)
+
+	def collideWithBall(self, ball):
+		return
+
+class Wall(Entity):
+
+	def __init__(self, width, height):
+		surf = pygame.Surface((width,height))
+		surf.fill((128,128,128))
+		Entity.__init__(self, surf)
+
+	# Reflect ball with same function as brick
+	def collideWithBall(self, ball):
+		return
+
+	# prevent paddle from moving past/have it bounce off
+	def collideWithPaddle(self, paddle):
+		return
 
 # class state should have an update and render function
 class GameState:
 
 	def __init__(self):
-		self.theBall = Ball()
+
+		self.balls = []
+		self.paddles = []
+		self.entities = []
+		
+		# Temporarily create all of the surfaces right here so we can test them
+
+		self.tempBall = Ball()
+		self.tempBall.setVelocity(100,150)
+		self.tempBall.setPosition(400,300)
+
+		self.tempPaddle = Paddle()
+		self.tempPaddle.setPosition(100,500)
+
+		self.tempBrick = Brick()
+		self.tempBrick.setPosition(100,100)
+
+		self.tempWall = Wall(100,100)
+		self.tempWall.setPosition(500,100)
+
+
+		self.balls.append(self.tempBall)
+		self.paddles.append(self.tempPaddle)
+		self.entities.extend([self.tempBall,self.tempPaddle,self.tempBrick,self.tempWall])
+
 
 		self.background = pygame.Surface((800,600))
 		self.background.fill((0,0,0))
@@ -120,13 +179,17 @@ class GameState:
 
 	def update(self, delta):
 
-		self.theBall.update(delta)
+		for e in self.entities:
+			e.update(delta)
+
 
 
 	def render(self):
 
 		screen.blit(self.background,self.background.get_rect())
-		self.theBall.draw()
+		
+		for e in self.entities:
+			e.draw()
 
 
 
@@ -138,10 +201,17 @@ class StateManager:
 
 	def __init__(self):
 		self.states = dict()
-		self.currentState = GameState() # <--- temporary
+		self.currentState = None
 
 		self.FPS = 60
 		self.clock = pygame.time.Clock()
+
+	def addState(self, name, state):
+		self.states[name] = state
+
+	def selectState(self, name):
+		self.currentState = self.states[name]
+
 
 	def run(self):
 		running = True
@@ -168,4 +238,6 @@ class StateManager:
 
 
 hello = StateManager()
+hello.addState("game", GameState())
+hello.selectState("game")
 hello.run()
