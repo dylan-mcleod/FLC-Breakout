@@ -1,18 +1,18 @@
 import pygame
-import math
-from pygame.locals import *
-from engine import *
+import engine
+import scenes
 
 # This is a subclass of Entity, which means that it behaves just like an entity would in terms of the interface
 # Entity is considered to be the "Base" class, like how Pet would be the base class of Cat
 # We can treat it exactly like an entity, and call the same functions (setPosition, update, intersects, etc)
 # It just might have a different implementation of those functions and do something differently when called
-class Ball(Entity):
+class Ball(engine.Entity):
 
 	def __init__(self):
 		surf = pygame.Surface((15,15))
 		surf.fill((255,255,255))
-		Entity.__init__(self, surf)
+		#call Entity __init__
+		super(type(self),self).__init__(surf)
 
 
 	# Temporary behavior that has it bouncing along walls and stuff
@@ -23,12 +23,13 @@ class Ball(Entity):
 		if(self.y <= 0 or self.y >= 600):
 			self.setVelocity( self.vx, -self.vy)
 
-class Paddle(Entity):
+class Paddle(engine.Entity):
 
 	def __init__(self):
 		surf = pygame.Surface((100,30))
 		surf.fill((255,255,255))
-		Entity.__init__(self, surf)
+		#call Entity __init__
+		super(type(self),self).__init__(surf)
 
 	# implement player controls
 	def behavior(self):
@@ -37,22 +38,24 @@ class Paddle(Entity):
 	def collideWithBall(self, ball):
 		return
 
-class Brick(Entity):
+class Brick(engine.Entity):
 
 	def __init__(self):
 		surf = pygame.Surface((40,15))
 		surf.fill((255,0,0))
-		Entity.__init__(self, surf)
+		#call Entity __init__
+		super(type(self),self).__init__(surf)
 
 	def collideWithBall(self, ball):
 		return
 
-class Wall(Entity):
+class Wall(engine.Entity):
 
 	def __init__(self, width, height):
 		surf = pygame.Surface((width,height))
 		surf.fill((128,128,128))
-		Entity.__init__(self, surf)
+		#call Entity __init__
+		super(type(self),self).__init__(surf)
 
 	# Reflect ball with same function as brick
 	def collideWithBall(self, ball):
@@ -63,11 +66,9 @@ class Wall(Entity):
 		return
 
 # class state should have an update and render function
-class PlayScene(Scene):
+class PlayScene(engine.Scene):
 
 	def __init__(self):
-		self.paused = False
-
 		self.balls = []
 		self.paddles = []
 		self.entities = []
@@ -93,28 +94,20 @@ class PlayScene(Scene):
 		self.entities.extend([self.tempBall,self.tempPaddle,self.tempBrick,self.tempWall])
 
 
-		self.background = pygame.Surface((800,600))
-		self.background.fill((0,0,0))
-
-
 	def update(self, delta):
-		if not self.paused:
-			for e in self.entities:
-				e.update(delta)
+		for e in self.entities:
+			e.update(delta)
+		#press escape to pause
+		if engine.wasKeyPressed(pygame.K_ESCAPE): self.pause()
 
 
+	def render(self, surface):
 
-	def render(self):
-
-		screen.blit(self.background,self.background.get_rect())
+		surface.fill((0,0,0))
 		
 		for e in self.entities:
-			e.draw()
+			e.draw(surface)
 
 
 	def pause(self):
-		self.paused = True
-
-
-	def resume(self):
-		self.paused = False
+		engine.addScene(scenes.PauseScene())
