@@ -15,8 +15,7 @@ class MainMenuScene(Scene):
 
 	def update(self, delta):
 		#for now, just go straight to the play scene
-		sceneManager.addScene("play", PlayScene())
-		sceneManager.selectScene("play")
+		sceneManager.switchScene(PlayScene())
 		return
 
 

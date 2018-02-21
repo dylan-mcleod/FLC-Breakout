@@ -6,6 +6,5 @@ from scenes.play import PlayScene
 from scenes.mainMenu import MainMenuScene
 
 
-sceneManager.addScene("mainMenu", MainMenuScene())
-sceneManager.selectScene("mainMenu")
+sceneManager.switchScene(MainMenuScene())
 sceneManager.run()
