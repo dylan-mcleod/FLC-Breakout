@@ -1,9 +1,15 @@
 import engine.core
 import engine.entity
+import engine.ui
 
 #class definitions
 engine.Scene = engine.core.Scene
 engine.Entity = engine.entity.Entity
+engine.Text = engine.ui.Text
+engine.Menu = engine.ui.Menu
+
+#constants
+engine.ANCHOR = engine.ui.ANCHOR
 
 #Scene management methods
 engine.run = engine.core.sceneManager.run
