@@ -288,6 +288,7 @@ class KeyboardManager:
 
 #Manages gamepad events.
 #Not yet implemented.
+#use pygame.joystick, and ignore trackball stuff for now
 class GamepadManager:
 
 	def __init__(self):

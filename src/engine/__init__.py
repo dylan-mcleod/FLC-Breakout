@@ -1,6 +1,8 @@
 import engine.core
 import engine.entity
 import engine.ui
+import engine.scaling
+import engine.io
 
 #class definitions
 engine.Scene = engine.core.Scene
@@ -8,8 +10,9 @@ engine.Entity = engine.entity.Entity
 engine.Text = engine.ui.Text
 engine.Menu = engine.ui.Menu
 
-#constants
-engine.ANCHOR = engine.ui.ANCHOR
+#Common Utilities
+engine.Anchor = engine.scaling.Anchor
+engine.SRect = engine.scaling.SRect
 
 #Scene management methods
 engine.run = engine.core.sceneManager.run
@@ -35,3 +38,7 @@ engine.leaveVirtualMode = engine.core.mouseManager.leaveVirtualMode
 #Disabled due to bad practice/readability. Uncomment if you need to use one of these methods.
 #engine.setVirtualMode = engine.core.mouseManager.setVirtualMode
 #engine.setMousePosition = engine.core.mouseManager.setMousePosition
+
+engine.AssetType = engine.io.AssetType
+engine.add_asset = engine.io.assetManager.add_asset
+engine.get_asset_path = engine.io.assetManager.get_asset_path

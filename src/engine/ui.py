@@ -1,6 +1,7 @@
 import pygame
+import engine
+from engine.scaling import *
 import os
-
 # TODO: input and paths
 
 class Font_Fetcher:
@@ -17,8 +18,8 @@ class Font_Fetcher:
 		return font
 
 # TODO: paths, think I need asset acquisition module
-GAME_FONT_PATH = pygame.font.match_font('bitstreamverasans')
-GAME_FONT_BOLD_PATH = pygame.font.match_font('bitstreamverasans')
+GAME_FONT_PATH = os.path.abspath("..\\assets\\fonts\\Orbitron-Bold.ttf")
+GAME_FONT_BOLD_PATH = os.path.abspath("..\\assets\\fonts\\Orbitron-Black.ttf")
 
 GAME_FONT = Font_Fetcher(GAME_FONT_PATH)
 GAME_FONT_BOLD = Font_Fetcher(GAME_FONT_BOLD_PATH)
@@ -28,77 +29,32 @@ GAME_FONT_COLOR_ACTIVE = (200, 200, 200)
 GAME_FONT_COLOR_GRAYED = (100, 100, 100)
 
 
-class ANCHOR:
-	TOP_LEFT      = 0
-	TOP_CENTER    = 1
-	TOP_RIGHT     = 2
-	CENTER_LEFT   = 3
-	CENTER        = 4
-	CENTER_RIGHT  = 5
-	BOTTOM_LEFT   = 6
-	BOTTOM_CENTER = 7
-	BOTTOM_RIGHT  = 8
-
-def position_rect_top_left(rect, position):
-	rect.topleft = position
-
-def position_rect_top_center(rect, position):
-	rect.midtop = position
-
-def position_rect_top_right(rect, position):
-	rect.topright = position
-
-def position_rect_center_left(rect, position):
-	rect.midleft = position
-
-def position_rect_center(rect, position):
-	rect.center = position
-
-def position_rect_center_right(rect, position):
-	rect.midright = position
-
-def position_rect_bottom_left(rect, position):
-	rect.bottomleft = position
-
-def position_rect_bottom_center(rect, position):
-	rect.midbottom = position
-
-def position_rect_bottom_right(rect, position):
-	rect.bottomright = position
-
-POSITION_RECT_LIST = [position_rect_top_left,
-                      position_rect_top_center,
-                      position_rect_top_right,
-                      position_rect_center_left,
-                      position_rect_center,
-                      position_rect_center_right,
-                      position_rect_bottom_left,
-                      position_rect_bottom_center,
-                      position_rect_bottom_right]
-
-
-
 class Location:
 	
-	def __init__(self, position = (0, 0), anchor = ANCHOR.TOP_LEFT):
+	def __init__(self, position = (0, 0), anchor = Anchor.TOP_LEFT):
 		self.position = position
 		self.anchor = anchor
 
 def set_rect_location(rect, location):
-	POSITION_RECT_LIST[location.anchor](rect, location.position)
+	rect.set_pos(location.position, location.anchor)
 
+#class UIGroup
+#class UIElement(UIGroup)
+#TextButton(UIElement)
+#Image(UIElement)
+#Imagebutton(UIElement)
 
 
 class Text:
 	
 	def __init__(self):
 		self.surface = None
-		self.bounds = pygame.Rect(0, 0, 0, 0)
+		self.bounds = engine.SRect(0, 0, 0, 0)
 		self.location = Location()
 	
 	def render_with_font(self, text_string, font, color):
 		self.surface = font.render(text_string, True, color)
-		self.bounds = self.surface.get_rect()
+		self.bounds = engine.SRect.fromRect(self.surface.get_rect())
 		set_rect_location(self.bounds, self.location)
 	
 	def render(self, text_string, size, color = GAME_FONT_COLOR):
@@ -118,7 +74,7 @@ class Text:
 	
 	def draw(self, dest_surface):
 		if self.surface:
-			dest_surface.blit(self.surface, self.bounds)
+			dest_surface.blit(self.surface, self.bounds.toRect())
 
 
 
@@ -161,21 +117,21 @@ class Menu_Item:
 
 
 def get_menu_item_anchor(menu_anchor):
-	return menu_anchor % 3
+	return engine.Anchor(int(menu_anchor) % 3)
 
 def get_menu_item_x(anchor, width):
-	return [0, width/2, width][anchor]
+	return [0, width/2, width][int(anchor)]
 
 class Menu:
 	
-	def __init__(self, anchor = ANCHOR.TOP_LEFT, item_size = 18, 
+	def __init__(self, anchor = Anchor.TOP_LEFT, item_size = 18, 
 	             header_string = None, header_size = 22):
 		self.item_font = GAME_FONT.get_size(item_size)
 		self.location = Location((0, 0), anchor)
 		self.items = []
 		self.active_item_index = -1
 		self.surface = None
-		self.bounds = pygame.Rect(0, 0, 0, 0)
+		self.bounds = engine.SRect(0, 0, 0, 0)
 		
 		if header_string:
 			header = Text()
@@ -244,7 +200,7 @@ class Menu:
 			self.header_text.draw(self.surface)
 		for item in self.items:
 			item.text.draw(self.surface)
-		dest_surface.blit(self.surface, self.bounds)
+		dest_surface.blit(self.surface, self.bounds.toRect())
 	
 	
 	def update(self, passthrough = None):

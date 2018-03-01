@@ -6,7 +6,7 @@ import pygame.font
 class MainMenuScene(engine.Scene):
 
 	def __init__(self):
-		self.menu = engine.Menu(anchor = engine.ANCHOR.BOTTOM_RIGHT, header_string = "Breakout")
+		self.menu = engine.Menu(anchor = engine.Anchor.BOTTOM_RIGHT, header_string = "Breakout")
 		
 		play_item = self.menu.add_item()
 		play_item.set_contents("Play")
