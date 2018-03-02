@@ -56,18 +56,9 @@ class AssetManager:
 
 
 def getAssetPath(relpath):
-	return os.path.abspath(os.path.join("..\\assets\\",relpath))
+	return os.path.abspath(os.path.join("..", "assets",relpath))
 
 def getDataPath(relpath):
-	return os.path.abspath(os.path.join("..\\data\\", relpath))
-
-def getFilePath(relpath):
-	return ".\{}".format(path)
-
-def get_font(name):
-	return pygame.font.Font(path)
-
-def get_image(name):
-	return pygame.image.load(path)
+	return os.path.abspath(os.path.join("..", "data", relpath))
 
 assetManager = AssetManager()
