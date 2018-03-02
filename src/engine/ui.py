@@ -18,8 +18,8 @@ class Font_Fetcher:
 		return font
 
 # TODO: paths, think I need asset acquisition module
-GAME_FONT_PATH = os.path.abspath("..\\assets\\fonts\\Orbitron-Bold.ttf")
-GAME_FONT_BOLD_PATH = os.path.abspath("..\\assets\\fonts\\Orbitron-Black.ttf")
+GAME_FONT_PATH = os.path.abspath(os.path.join("..", "assets", "fonts", "Orbitron-Regular.ttf"))
+GAME_FONT_BOLD_PATH = os.path.abspath(os.path.join("..", "assets", "fonts", "Orbitron-Bold.ttf"))
 
 GAME_FONT = Font_Fetcher(GAME_FONT_PATH)
 GAME_FONT_BOLD = Font_Fetcher(GAME_FONT_BOLD_PATH)
