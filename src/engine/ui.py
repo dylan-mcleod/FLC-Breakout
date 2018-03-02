@@ -13,7 +13,7 @@ class Font_Fetcher:
 	def get_size(self, size):
 		font = self.sizes.get(size)
 		if not font:
-			font = pygame.font.Font(self.path, size)
+			font = pygame.font.Font(self.path, int(window_scale*size))
 			self.sizes[size] = font
 		return font
 
@@ -124,8 +124,8 @@ def get_menu_item_x(anchor, width):
 
 class Menu:
 	
-	def __init__(self, anchor = Anchor.TOP_LEFT, item_size = 18, 
-	             header_string = None, header_size = 22):
+	def __init__(self, anchor = Anchor.TOP_LEFT, item_size = 0.18, 
+	             header_string = None, header_size = 0.22):
 		self.item_font = GAME_FONT.get_size(item_size)
 		self.location = Location((0, 0), anchor)
 		self.items = []

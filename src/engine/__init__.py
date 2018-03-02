@@ -13,6 +13,9 @@ engine.Menu = engine.ui.Menu
 #Common Utilities
 engine.Anchor = engine.scaling.Anchor
 engine.SRect = engine.scaling.SRect
+engine.screen_bounds = engine.scaling.screen_bounds
+
+engine.window_bounds = engine.scaling.window_bounds
 
 #Scene management methods
 engine.run = engine.core.sceneManager.run

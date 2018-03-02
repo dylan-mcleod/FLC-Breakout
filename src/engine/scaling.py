@@ -16,6 +16,10 @@ class Anchor(Enum):
 	def __int__(self):
 		return self.value
 
+window_dim = (800, 600)
+window_center = (400, 300)
+window_scale = 300
+
 #Behold the scaled rect!
 #A floating point python implementation of pygame.Rect, with some extra funtionality.
 #Supremely useful for everything but direct rendering.
@@ -75,7 +79,9 @@ class SRect:
 		(self.__x, self.__y) = (self.__x + delta[0], self.__y + delta[1])
 
 	def toRect(self):
-		return pygame.Rect(self.__x, self.__y, self.__w, self.__h)
+		return pygame.Rect(self.__x * window_scale, self.__y * window_scale, self.__w * window_scale, self.__h * window_scale).move(window_center[0], window_center[1])
+		#print(rct)
+		#return rct
 
 	#x
 	@property
@@ -238,3 +244,7 @@ class SRect:
 	@height.setter
 	def height(self, hgt):
 		self.__h = hgt
+
+
+window_bounds = pygame.Rect(0, 0, 800, 600)
+screen_bounds = SRect(-4/3, -1, 2*4/3, 2)
