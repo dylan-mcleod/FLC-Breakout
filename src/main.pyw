@@ -5,12 +5,14 @@ import scenes
 import pygame
 import os
 
-print(os.path.abspath(os.path.join("src\\", os.pardir)))
-print(os.pardir)
-print(os.path.abspath(os.path.join("..\\assets\\","fonts")))
+#load some stuff
+engine.load_font("Main Font", "Orbitron-Bold")
+engine.load_image("ball", "ball")
+engine.load_image("paddle", "paddle")
 
-engine.add_asset("Main Font", "fonts\\Orbitron-Bold.ttf")
-print(engine.get_asset_path("Main Font", engine.AssetType.FONT))
+#for testing, can be removed
+engine.get_image("paddle")
+engine.get_font("Main Font", 22)
 
 if __name__ == "__main__":
 	engine.run(scenes.MainMenuScene())

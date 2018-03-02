@@ -7,14 +7,14 @@ import engine.io
 #class definitions
 engine.Scene = engine.core.Scene
 engine.Entity = engine.entity.Entity
+engine.Anchor = engine.scaling.Anchor
+engine.SRect = engine.scaling.SRect
 engine.Text = engine.ui.Text
 engine.Menu = engine.ui.Menu
 
-#Common Utilities
-engine.Anchor = engine.scaling.Anchor
-engine.SRect = engine.scaling.SRect
+#scaling
 engine.screen_bounds = engine.scaling.screen_bounds
-
+engine.window_scale = engine.scaling.window_scale
 engine.window_bounds = engine.scaling.window_bounds
 
 #Scene management methods
@@ -42,6 +42,22 @@ engine.leaveVirtualMode = engine.core.mouseManager.leaveVirtualMode
 #engine.setVirtualMode = engine.core.mouseManager.setVirtualMode
 #engine.setMousePosition = engine.core.mouseManager.setMousePosition
 
-engine.AssetType = engine.io.AssetType
-engine.add_asset = engine.io.assetManager.add_asset
-engine.get_asset_path = engine.io.assetManager.get_asset_path
+
+
+#asset management
+engine.load_image = engine.io.assetManager.load_image
+engine.get_image = engine.io.assetManager.get_image
+
+engine.load_font = engine.io.assetManager.load_font
+engine.get_font = engine.io.assetManager.get_font
+
+engine.load_sfx = engine.io.assetManager.load_sfx
+engine.get_sfx = engine.io.assetManager.get_sfx
+
+engine.load_music = engine.io.assetManager.load_music
+engine.get_music = engine.io.assetManager.get_music
+
+#Disabled due to bad practice/readability. Uncomment if you need to use one of these methods.
+#engine.AssetType = engine.io.AssetType
+#engine.add_asset = engine.io.assetManager.add_asset
+#engine.get_asset_path = engine.io.assetManager.get_asset_path
