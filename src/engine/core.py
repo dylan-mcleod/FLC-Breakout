@@ -1,10 +1,14 @@
 import pygame
 import math
+import engine.scaling
 
 #Not sure if this should be here.
 pygame.init()
 #Here for game engine only - do not use!
-gameScreen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Breakout!")
+starting_size = (1280, 720)
+gameScreen = pygame.display.set_mode(starting_size, pygame.RESIZABLE )
+engine.scaling.resize(starting_size)
 
 
 #Scene - a part of the game, such as the main menu or play screen.
@@ -134,6 +138,12 @@ class SceneManager:
 		"""The main game loop."""
 
 		while(self.scenes):
+
+			#process events
+			evt = self.event_handler()
+			if(evt):
+				return evt
+
 			# ticks targetFPS times per second, divided by 1000 to convert ms to s
 			delta = self.clock.tick(self.targetFPS) / 1000.0
 
@@ -164,10 +174,7 @@ class SceneManager:
 			mouseManager.update()
 			gamepadManager.update()
 
-			#process events
-			evt = self.event_handler()
-			if(evt):
-				return evt
+			
 		return "No more scenes."
 		#raise self.SafeExit("no more scenes")
 
@@ -175,25 +182,41 @@ class SceneManager:
 		"""Handles events from pygame"""
 
 		for evt in pygame.event.get():
-			if evt.type == pygame.QUIT:
-				#raise self.SafeExit("window closed")
-				return "Window closed."
-			#the python equivalent of a switch statement
-			{
-				pygame.MOUSEBUTTONUP : mouseManager.upEvent,
-				pygame.MOUSEBUTTONDOWN : mouseManager.downEvent,
-				pygame.KEYDOWN : keyboardManager.downEvent,
-				pygame.KEYUP : keyboardManager.upEvent,
-				pygame.JOYAXISMOTION : gamepadManager.JOYAXISMOTION,
-				pygame.JOYBALLMOTION : gamepadManager.JOYBALLMOTION,
-				pygame.JOYHATMOTION : gamepadManager.JOYHATMOTION,
-				pygame.JOYBUTTONUP : gamepadManager.JOYBUTTONUP,
-				pygame.JOYBUTTONDOWN : gamepadManager.JOYBUTTONDOWN
-			}.get(evt.type, self.emptyEventCallback)(evt)
+			if  (evt.type == pygame.QUIT):            return "Window closed."
+			elif(evt.type == pygame.MOUSEBUTTONUP):   return mouseManager.upEvent(evt)
+			elif(evt.type == pygame.MOUSEBUTTONDOWN): return mouseManager.downEvent(evt)
+			elif(evt.type == pygame.KEYDOWN):         return keyboardManager.downEvent(evt)
+			elif(evt.type == pygame.KEYUP):           return keyboardManager.upEvent(evt)
+			elif(evt.type == pygame.JOYAXISMOTION):   return gamepadManager.JOYAXISMOTION(evt)
+			elif(evt.type == pygame.JOYBALLMOTION):   return gamepadManager.JOYBALLMOTION(evt)
+			elif(evt.type == pygame.JOYHATMOTION):    return gamepadManager.JOYHATMOTION(evt)
+			elif(evt.type == pygame.JOYBUTTONUP):     return gamepadManager.JOYBUTTONUP(evt)
+			elif(evt.type == pygame.JOYBUTTONDOWN):   return gamepadManager.JOYBUTTONDOWN(evt)
+			elif(evt.type == pygame.VIDEORESIZE):     return self.resize_event(evt)
 
 	def emptyEventCallback(self, evt):
 		"""Intentionally does nothing."""
 		pass
+
+	def resize_event(self, evt):
+		"""Called when the screen is resized."""
+		size = evt.size
+		#Log this event. It's a dangerous one.
+		print("Screen resized to: ({}, {}).".format(size[0], size[1]))
+		#TEMPORARY STUFFS
+		engine.scaling.resize(size)
+		#engine.screen_bounds = engine.scaling.interface.screen_bounds
+		#engine.window_scale = engine.scaling.interface.window_scale
+		#engine.window_bounds = engine.scaling.interface.window_bounds
+		#print(engine.scaling.interface.window_scale)
+		#update the display window size
+		pygame.display.set_mode(size, pygame.RESIZABLE )
+		#update (replace) scene screens
+		for i in range(len(self.screens)):
+			#resize the screens
+			self.screens[i] = pygame.Surface(gameScreen.get_size(),pygame.SRCALPHA)
+			#re-render the resized scenes
+			self.scenes[i].render(self.screens[i])
 
 
 #Manages mouse events.

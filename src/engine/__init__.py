@@ -26,9 +26,9 @@ engine.UI_Text_Button = engine.ui.UI_Text_Button
 engine.UI_Menu = engine.ui.UI_Menu
 
 #scaling
-engine.screen_bounds = engine.scaling.screen_bounds
-engine.window_scale = engine.scaling.window_scale
-engine.window_bounds = engine.scaling.window_bounds
+engine.get_screen_bounds = engine.scaling.get_screen_bounds
+#engine.get_window_scale = engine.scaling.get_window_scale
+#engine.get_window_bounds = engine.scaling.get_window_bounds
 engine.to_engine_units = engine.scaling.to_engine_units
 engine.to_pygame_units = engine.scaling.to_pygame_units
 
