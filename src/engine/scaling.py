@@ -1,6 +1,9 @@
 import pygame
 from enum import Enum
 
+
+
+
 #Le Anchor enum, created by Tau
 class Anchor(Enum):
 	TOP_LEFT      = 0
@@ -15,17 +18,6 @@ class Anchor(Enum):
 
 	def __int__(self):
 		return self.value
-
-window_dim = (800, 600)
-window_center = (400, 300)
-window_scale = 300
-
-
-def to_engine_units(pygame_units):
-	return pygame_units/window_scale
-
-def to_pygame_units(engine_units):
-	return int(engine_units*window_scale)
 
 #Behold the scaled rect!
 #A floating point python implementation of pygame.Rect, with some extra funtionality.
@@ -252,5 +244,56 @@ class SRect:
 	def height(self, hgt):
 		self.__h = hgt
 
-window_bounds = pygame.Rect(0, 0, 800, 600)
-screen_bounds = SRect(-4/3, -1, 2*4/3, 2)
+
+
+window_dim = (800, 600)
+window_center = (window_dim[0] / 2, window_dim[1] / 2)
+window_scale = min(window_center[0], window_center[1])
+window_bounds = pygame.Rect(0, 0, int(window_dim[0]), int(window_dim[1]))
+
+sw = window_dim[0] / window_scale / 2
+sh = window_dim[1] / window_scale / 2
+screen_bounds = SRect(-sw, -sh, 2*sw, 2*sh)
+
+def resize(size):
+	global screen_bounds, window_center, window_scale, window_dim, window_bounds
+	window_dim = size
+	window_center = (window_dim[0] / 2, window_dim[1] / 2)
+	window_scale = min(window_center[0], window_center[1])
+	window_bounds = pygame.Rect(0, 0, int(window_dim[0]), int(window_dim[1]))
+
+	sw = window_dim[0] / window_scale / 2
+	sh = window_dim[1] / window_scale / 2
+	screen_bounds = SRect(-sw, -sh, 2*sw, 2*sh)
+	print(screen_bounds)
+
+def to_engine_units(pygame_units):
+	return pygame_units / window_scale
+
+def to_pygame_units(engine_units):
+	return int(engine_units * window_scale)
+
+def get_window_dim():
+	return window_dim
+
+def get_window_center():
+	return window_center
+
+def get_window_scale():
+	return window_scale
+
+def get_window_bounds():
+	return window_bounds
+
+def get_screen_bounds():
+	return screen_bounds
+
+"""def resize(size):
+	#window_dim = pygame.display.get_surface().get_size()
+	__window_dim = size
+	__window_center = (window_dim[0] / 2, window_dim[1] / 2)
+	__window_scale = min(window_center[0], window_center[1])
+	sw = window_dim[0] / window_scale / 2
+	sh = window_dim[1] / window_scale / 2
+
+	__screen_bounds = SRect(-sw, -sh, 2*sw, 2*sh)"""

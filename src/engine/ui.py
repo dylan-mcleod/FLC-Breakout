@@ -51,7 +51,7 @@ class UI_Element:
 		if self.parent:
 			return self.parent.bounds
 		else:
-			return engine.screen_bounds
+			return engine.get_screen_bounds()
 	
 	
 	def _update_bounds_position(self):

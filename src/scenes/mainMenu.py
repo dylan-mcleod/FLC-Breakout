@@ -26,6 +26,8 @@ class MainMenuScene(engine.Scene):
 
 	def render(self, surface):
 		surface.fill((150, 150, 150, 255))
+		
+		surface.blit(engine.get_image("metal background"), pygame.Rect(0,0,1920,1080))
 		self.menu_group.draw(surface)
 		self.title.draw(surface)
 
