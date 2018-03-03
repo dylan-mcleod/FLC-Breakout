@@ -13,6 +13,12 @@ engine.SRect = engine.scaling.SRect
 #User interfaces
 engine.GAME_FONT = engine.ui.GAME_FONT
 engine.GAME_FONT_BOLD = engine.ui.GAME_FONT_BOLD
+engine.GAME_FONT_COLOR = engine.ui.GAME_FONT_COLOR
+engine.GAME_FONT_COLOR_ACTIVE = engine.ui.GAME_FONT_COLOR_ACTIVE
+engine.GAME_FONT_COLOR_DISABLED = engine.ui.GAME_FONT_COLOR_DISABLED
+engine.GAME_MENU_BG_COLOR = engine.ui.GAME_MENU_BG_COLOR
+engine.DEFAULT_MENU_PADDING = engine.ui.DEFAULT_MENU_PADDING
+engine.DEFAULT_FONT_HEIGHT = engine.ui.DEFAULT_FONT_HEIGHT
 engine.UI_Frame = engine.ui.UI_Frame
 engine.UI_Group = engine.ui.UI_Group
 engine.UI_Text = engine.ui.UI_Text

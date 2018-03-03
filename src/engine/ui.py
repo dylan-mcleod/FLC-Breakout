@@ -20,14 +20,14 @@ class Font_Sizer:
 GAME_FONT = Font_Sizer("Regular")
 GAME_FONT_BOLD = Font_Sizer("Bold")
 
-GAME_FONT_COLOR        = (255, 255, 255)
-GAME_FONT_COLOR_ACTIVE = (200, 200, 200)
-GAME_FONT_COLOR_GRAYED = (100, 100, 100)
+GAME_FONT_COLOR          = (255, 255, 255)
+GAME_FONT_COLOR_ACTIVE   = (185, 185, 185)
+GAME_FONT_COLOR_DISABLED = (100, 100, 100)
 
-GAME_MENU_BG_COLOR     = (0,   0,   0,  150)
+GAME_MENU_BG_COLOR       = (0,   0,   0,  150)
 
-DEFAULT_MENU_PADDING   = .05
-DEFAULT_FONT_HEIGHT    = .1
+DEFAULT_MENU_PADDING     = .05
+DEFAULT_FONT_HEIGHT      = .1
 
 
 def initialize_ui():
@@ -43,8 +43,7 @@ class UI_Element:
 		self.offset = (0, 0)
 		self.anchor = engine.Anchor.CENTER
 		self.parent = None
-		self.background_color = None
-		self.background_surface = None
+		self._update_bounds_position()
 	
 	
 	def _get_parent_bounds(self):
@@ -59,15 +58,6 @@ class UI_Element:
 		px, py = self._get_parent_bounds().get_pos(self.anchor)
 		self.bounds.set_pos((px + ox, py + oy), self.anchor)
 		# Extensions extend this
-	
-	def _create_background(self, rect):
-		self.background_surface = pygame.Surface(rect.size, flags = pygame.SRCALPHA)
-		self.background_surface.fill(self.background_color)
-	
-	def set_background(self, background_color = GAME_MENU_BG_COLOR):
-		self.background_color = background_color
-		if background_color:
-			self._create_background(self.bounds.toRect())
 	
 	
 	# UI_Group sets offsets and anchors of children directly, 
@@ -86,23 +76,19 @@ class UI_Element:
 	
 	
 	def draw(self, destination_surface):
-		if self.background_color:
-			bounds_rect = self.bounds.toRect()
-			bg_rect = self.background_surface.get_rect()
-			if(bg_rect.size != bounds_rect.size):
-				self._create_background(bounds_rect)
-			destination_surface.blit(self.background_surface, bounds_rect)
-		# Extensions extend this
+		pass
+		# Extensions override this
 
 
 
 
+class UI_Parent(UI_Element):
 
-class UI_Frame(UI_Element):
-	
-	def __init__(self, width, height):
+	def __init__(self, width = 0, height = 0):
+		self.children = []
+		self.background_color = None
+		self.background_surface = None
 		super().__init__(width, height)
-		children = []
 	
 	
 	def _update_bounds_position(self):
@@ -110,6 +96,38 @@ class UI_Frame(UI_Element):
 		for child in self.children:
 			child._update_bounds_position()
 	
+	
+	def _add_child(self, child):
+		self.children.append(child)
+		child.parent = self
+	
+	
+	def _create_background(self, rect):
+		self.background_surface = pygame.Surface(rect.size, flags = pygame.SRCALPHA)
+		self.background_surface.fill(self.background_color)
+	
+	
+	def set_background(self, background_color = GAME_MENU_BG_COLOR):
+		self.background_color = background_color
+		if background_color:
+			self._create_background(self.bounds.toRect())
+	
+	
+	def draw(self, destination_surface):
+		if self.background_color:
+			bounds_rect = self.bounds.toRect()
+			bg_rect = self.background_surface.get_rect()
+			if(bg_rect.size != bounds_rect.size):
+				self._create_background(bounds_rect)
+			destination_surface.blit(self.background_surface, bounds_rect)
+		
+		for child in self.children:
+			child.draw(destination_surface)
+
+
+
+
+class UI_Frame(UI_Parent):
 	
 	def resize(self, size):
 		self.bounds.size = size
@@ -119,15 +137,8 @@ class UI_Frame(UI_Element):
 	def add_child(self, child):
 		if child.parent:
 			return
-		self.children.append(child)
-		child.parent = self
+		self._add_child(child)
 		child._update_bounds_position()
-	
-	
-	def draw(self, destination_surface):
-		super().draw(destination_surface)
-		for child in self.children:
-			child.draw(destination_surface)
 
 
 
@@ -142,18 +153,11 @@ def get_first_group_child_offset(anchor, bounds, p):
 
 
 
-class UI_Group(UI_Element):
+class UI_Group(UI_Parent):
 	
 	def __init__(self, padding = DEFAULT_MENU_PADDING):
 		super().__init__()
-		self.children = []
 		self.padding = padding
-	
-	
-	def _update_bounds_position(self):
-		super()._update_bounds_position()
-		for child in self.children:
-			child._update_bounds_position()
 	
 	
 	def _arrange_children(self):
@@ -166,7 +170,7 @@ class UI_Group(UI_Element):
 		
 		p = self.padding*2
 		self.bounds.size = (w + p, h + p)
-		super()._update_bounds_position()
+		UI_Element._update_bounds_position(self)
 		
 		child_anchor = get_group_child_anchor(self.anchor)
 		x, y = get_first_group_child_offset(child_anchor, self.bounds, self.padding)
@@ -180,46 +184,46 @@ class UI_Group(UI_Element):
 	def add_child(self, child):
 		if child.parent or type(child) is UI_Group:
 			return
-		self.children.append(child)
-		child.parent = self
+		self._add_child(child)
 		self._arrange_children()
+
+
+
+
+
+class Text_Element:
+	
+	def __init__(self, text_string, font, color):
+		self.surface = font.render(text_string, True, color)
 	
 	
-	def draw(self, destination_surface):
-		super().draw(destination_surface)
-		for child in self.children:
-			child.draw(destination_surface)
-
-
-
-
-
-class UI_Text(UI_Element):
-	
-	# TODO: can I reuse code between this and UI_Text_Button?
-	
-	# returns engine width
-	def _render(self):
-		self.surface = self.font.render(self.text_string, True, self.color)
+	def get_engine_width(self, height):
 		rect = self.surface.get_rect()
-		return self.height*(rect.width/rect.height)
+		return height*(rect.width/rect.height)
 	
+	def draw(self, destination_surface, bounds):
+		destination_surface.blit(self.surface, bounds.toRect())
+
+
+
+
+
+class Text_Base:
 	
 	# returns engine width
 	def _set_font_size(self, font_size):
 		self.font_size = font_size
 		# pygame seems to have an off-by-one error     VVV
-		self.font = self.font_sizer.get_size(font_size - 1) 
+		self.font = self.font_sizer.get_size(font_size - 1)
 		return self._render()
 	
 	
-	def __init__(self, text_string, height = DEFAULT_FONT_HEIGHT, 
-	             font = GAME_FONT, color = GAME_FONT_COLOR):
+	# returns engine width
+	def _init(self, text_string, height, font):
 		self.text_string = text_string
 		self.height = height
-		self.color = color
 		self.font_sizer = font
-		super().__init__(self._set_font_size(engine.to_pygame_units(height)), height)
+		return self._set_font_size(engine.to_pygame_units(height))
 	
 	
 	def set_string(self, text_string):
@@ -231,12 +235,37 @@ class UI_Text(UI_Element):
 			self._update_bounds_position()
 	
 	
-	def draw(self, destination_surface):
-		super().draw(destination_surface)
+	def _update_font_size(self):
 		font_size = engine.to_pygame_units(self.height)
 		if font_size != self.font_size:
 			self._set_font_size(font_size)
-		destination_surface.blit(self.surface, self.bounds.toRect())
+
+
+
+
+
+class UI_Text(UI_Element, Text_Base):
+	
+	def _render(self):
+		self.text = Text_Element(self.text_string, self.font, self.color)
+		return self.text.get_engine_width(self.height)
+	
+	
+	def __init__(self, text_string, height = DEFAULT_FONT_HEIGHT, 
+	             font = GAME_FONT, color = GAME_FONT_COLOR):
+		self.color = color
+		super().__init__(self._init(text_string, height, font), height)
+	
+	
+	def set_color(self, color):
+		self.color = color
+		self._render()
+	
+	
+	def draw(self, destination_surface):
+		self._update_font_size()
+		self.text.draw(destination_surface, self.bounds)
+
 
 
 # class UI_Image(UI_Element)
@@ -249,6 +278,7 @@ class UI_Menu_Item(UI_Element):
 		super().__init__(width, height)
 		self.is_active = False
 		self.is_enabled = True
+		self.was_selected = False
 	
 	
 	def set_active(self, is_active):
@@ -265,35 +295,31 @@ class UI_Menu_Item(UI_Element):
 		pass
 		# Extensions override this
 		# Planning on using this for things like sliders
-	
-	
-	def execute(self):
-		pass
-		# Extensions override this
 
 
 
 
-class UI_Text_Button(UI_Menu_Item):
+class UI_Text_Button(UI_Menu_Item, Text_Base):
 	
-	def __init__(self, text_string, height, font):
-		# TODO
-		pass
-	
-	
-	def set_string(self, text_string):
-		# TODO
-		pass
+	def _render(self):
+		self.inactive_text = Text_Element(self.text_string, self.font, GAME_FONT_COLOR)
+		self.active_text = Text_Element(self.text_string, self.font, GAME_FONT_COLOR_ACTIVE)
+		self.disabled_text = Text_Element(self.text_string, self.font, GAME_FONT_COLOR_DISABLED)
+		return self.inactive_text.get_engine_width(self.height)
 	
 	
-	def set_enabled(self, is_enabled):
-		# TODO
-		pass
+	def __init__(self, text_string, height = DEFAULT_FONT_HEIGHT, font = GAME_FONT):
+		super().__init__(self._init(text_string, height, font), height)
 	
 	
 	def draw(self, destination_surface):
-		# TODO
-		pass
+		self._update_font_size()
+		if not self.is_enabled:
+			self.disabled_text.draw(destination_surface, self.bounds)
+		elif self.is_active:
+			self.active_text.draw(destination_surface, self.bounds)
+		else:
+			self.inactive_text.draw(destination_surface, self.bounds)
 
 
 
@@ -307,13 +333,53 @@ class UI_Menu:
 	
 	def __init__(self):
 		self.items = []
-		self.active = -1
+		self.active = 0
+		self.selected = -1
+		self.mouse_overlapped = False
 	
 	
 	def add_item(self, item):
 		self.items.append(item)
+		if len(self.items) == 1:
+			item.set_active(True)
+	
+	
+	def _change_active(self, n):
+		self.items[self.active].set_active(False)
+		self.active = (self.active + n) % len(self.items)
+		self.items[self.active].set_active(True)
 	
 	
 	def update(self):
-		# TODO
-		pass
+		if self.selected != -1:
+			self.items[self.selected].was_selected = False
+			self.selected = -1
+		
+		if engine.wasKeyPressed(pygame.K_UP):
+			self._change_active(-1)
+		elif engine.wasKeyPressed(pygame.K_DOWN):
+			self._change_active(1)
+		
+		mouse_position = engine.getMousePosition()
+		mouse_overlapped = False
+		for i, item in enumerate(self.items):
+			if item.bounds.toRect().collidepoint(mouse_position):
+				mouse_overlapped = True
+				if not item.is_active:
+					self.items[self.active].set_active(False)
+					item.set_active(True)
+					self.active = i
+					break
+		
+		ai = self.items[self.active]
+		ai.update()
+		if ai.is_enabled:
+			left_mouse_clicked = len(engine.getClicks()[0])
+			if engine.wasKeyPressed(pygame.K_RETURN) or \
+			   (left_mouse_clicked and mouse_overlapped):
+				self.selected = self.active
+				ai.was_selected = True
+
+
+
+

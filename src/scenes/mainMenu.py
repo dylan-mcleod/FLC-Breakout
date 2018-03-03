@@ -12,16 +12,39 @@ class MainMenuScene(engine.Scene):
 		self.menu_group.set_anchor(engine.Anchor.BOTTOM_RIGHT)
 		self.menu_group.set_offset((-.1, -.1))
 		self.menu_group.set_background()
+		self.menu = engine.UI_Menu()
 		
-		self.menu_group.add_child(engine.UI_Text("Play"))
-		self.menu_group.add_child(engine.UI_Text("Settings"))
-		self.menu_group.add_child(engine.UI_Text("Credits"))
-		self.menu_group.add_child(engine.UI_Text("Quit"))
+		self.play_button = engine.UI_Text_Button("Play")
+		self.menu_group.add_child(self.play_button)
+		self.menu.add_item(self.play_button)
+		
+		self.settings_button = engine.UI_Text_Button("Settings")
+		self.menu_group.add_child(self.settings_button)
+		self.menu.add_item(self.settings_button)
+		
+		self.credits_button = engine.UI_Text_Button("Credits")
+		self.menu_group.add_child(self.credits_button)
+		self.menu.add_item(self.credits_button)
+		
+		self.quit_button = engine.UI_Text_Button("Quit")
+		self.menu_group.add_child(self.quit_button)
+		self.menu.add_item(self.quit_button)
 
 
 	def update(self, delta):
+		self.menu.update()
+		if self.play_button.was_selected:
+			engine.switchScene(scenes.PlayScene())
+		elif self.settings_button.was_selected:
+			engine.switchScene(scenes.SettingsScene())
+		elif self.credits_button.was_selected:
+			engine.switchScene(scenes.CreditsScene())
+		elif self.settings_button.was_selected:
+			# TODO quit
+			pass
+		
 		#for now, just go straight to the play scene on any left click or enter
-		if engine.getClicks()[0] or engine.wasKeyPressed(pygame.K_RETURN): engine.switchScene(scenes.PlayScene())
+		#if engine.getClicks()[0] or engine.wasKeyPressed(pygame.K_RETURN): engine.switchScene(scenes.PlayScene())
 
 
 	def render(self, surface):
