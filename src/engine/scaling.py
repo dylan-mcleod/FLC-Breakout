@@ -20,6 +20,13 @@ window_dim = (800, 600)
 window_center = (400, 300)
 window_scale = 300
 
+
+def to_engine_units(pygame_units):
+	return pygame_units/window_scale
+
+def to_pygame_units(engine_units):
+	return int(engine_units*window_scale)
+
 #Behold the scaled rect!
 #A floating point python implementation of pygame.Rect, with some extra funtionality.
 #Supremely useful for everything but direct rendering.
@@ -62,7 +69,7 @@ class SRect:
 		elif(anchor == Anchor.BOTTOM_CENTER): self.midbottom = point
 		elif(anchor == Anchor.BOTTOM_RIGHT) : self.bottomright = point
 
-	def get_pos(self, point, anchor = Anchor.CENTER):
+	def get_pos(self, anchor = Anchor.CENTER):
 		return {
 			Anchor.TOP_LEFT      : self.topleft,
 			Anchor.TOP_CENTER    : self.midtop,
@@ -73,7 +80,7 @@ class SRect:
 			Anchor.BOTTOM_LEFT   : self.bottomleft,
 			Anchor.BOTTOM_CENTER : self.midbottom,
 			Anchor.BOTTOM_RIGHT  : self.bottomright
-		}.get(anchor, self.topleft)
+		}.get(anchor)
 
 	def moveBy(self, delta):
 		(self.__x, self.__y) = (self.__x + delta[0], self.__y + delta[1])
@@ -244,7 +251,6 @@ class SRect:
 	@height.setter
 	def height(self, hgt):
 		self.__h = hgt
-
 
 window_bounds = pygame.Rect(0, 0, 800, 600)
 screen_bounds = SRect(-4/3, -1, 2*4/3, 2)

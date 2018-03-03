@@ -9,13 +9,22 @@ engine.Scene = engine.core.Scene
 engine.Entity = engine.entity.Entity
 engine.Anchor = engine.scaling.Anchor
 engine.SRect = engine.scaling.SRect
-engine.Text = engine.ui.Text
-engine.Menu = engine.ui.Menu
+
+#User interfaces
+engine.GAME_FONT = engine.ui.GAME_FONT
+engine.GAME_FONT_BOLD = engine.ui.GAME_FONT_BOLD
+engine.UI_Frame = engine.ui.UI_Frame
+engine.UI_Group = engine.ui.UI_Group
+engine.UI_Text = engine.ui.UI_Text
+engine.UI_Text_Button = engine.ui.UI_Text_Button
+engine.UI_Menu = engine.ui.UI_Menu
 
 #scaling
 engine.screen_bounds = engine.scaling.screen_bounds
 engine.window_scale = engine.scaling.window_scale
 engine.window_bounds = engine.scaling.window_bounds
+engine.to_engine_units = engine.scaling.to_engine_units
+engine.to_pygame_units = engine.scaling.to_pygame_units
 
 #Scene management methods
 engine.run = engine.core.sceneManager.run
@@ -61,3 +70,5 @@ engine.get_music = engine.io.assetManager.get_music
 #engine.AssetType = engine.io.AssetType
 #engine.add_asset = engine.io.assetManager.add_asset
 #engine.get_asset_path = engine.io.assetManager.get_asset_path
+
+engine.ui.initialize_ui()

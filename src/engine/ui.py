@@ -1,211 +1,319 @@
-import pygame
 import engine
-from engine.scaling import *
-import os
-# TODO: input and paths
+import pygame
 
-class Font_Fetcher:
+
+
+class Font_Sizer:
 	
-	def __init__(self, path):
-		self.path = path
+	def __init__(self, font_name):
+		self.font_name = font_name
 		self.sizes = {}
 	
 	def get_size(self, size):
 		font = self.sizes.get(size)
 		if not font:
-			font = pygame.font.Font(self.path, int(window_scale*size))
+			font = engine.get_font(self.font_name, size)
 			self.sizes[size] = font
 		return font
 
-# TODO: paths, think I need asset acquisition module
-GAME_FONT_PATH = os.path.abspath(os.path.join("..", "assets", "fonts", "Orbitron-Regular.ttf"))
-GAME_FONT_BOLD_PATH = os.path.abspath(os.path.join("..", "assets", "fonts", "Orbitron-Bold.ttf"))
 
-GAME_FONT = Font_Fetcher(GAME_FONT_PATH)
-GAME_FONT_BOLD = Font_Fetcher(GAME_FONT_BOLD_PATH)
+GAME_FONT = Font_Sizer("Regular")
+GAME_FONT_BOLD = Font_Sizer("Bold")
 
 GAME_FONT_COLOR        = (255, 255, 255)
 GAME_FONT_COLOR_ACTIVE = (200, 200, 200)
 GAME_FONT_COLOR_GRAYED = (100, 100, 100)
 
+GAME_MENU_BG_COLOR     = (0,   0,   0,  150)
 
-class Location:
-	
-	def __init__(self, position = (0, 0), anchor = Anchor.TOP_LEFT):
-		self.position = position
-		self.anchor = anchor
-
-def set_rect_location(rect, location):
-	rect.set_pos(location.position, location.anchor)
-
-#class UIGroup
-#class UIElement(UIGroup)
-#TextButton(UIElement)
-#Image(UIElement)
-#Imagebutton(UIElement)
+DEFAULT_MENU_PADDING   = .05
+DEFAULT_FONT_HEIGHT    = .1
 
 
-class Text:
-	
-	def __init__(self):
-		self.surface = None
-		self.bounds = engine.SRect(0, 0, 0, 0)
-		self.location = Location()
-	
-	def render_with_font(self, text_string, font, color):
-		self.surface = font.render(text_string, True, color)
-		self.bounds = engine.SRect.fromRect(self.surface.get_rect())
-		set_rect_location(self.bounds, self.location)
-	
-	def render(self, text_string, size, color = GAME_FONT_COLOR):
-		self.render_with_font(text_string, GAME_FONT.get_size(size), color)
-		
-	def set_anchor(self, anchor):
-		self.location.anchor = anchor
-		set_rect_location(self.bounds, self.location)
-	
-	def set_position(self, position):
-		self.location.position = position
-		set_rect_location(self.bounds, self.location)
-	
-	def set_location(self, location):
-		self.location = location
-		set_rect_location(self.bounds, self.location)
-	
-	def draw(self, dest_surface):
-		if self.surface:
-			dest_surface.blit(self.surface, self.bounds.toRect())
+def initialize_ui():
+	engine.load_font("Regular", "Orbitron-Regular")
+	engine.load_font("Bold", "Orbitron-Bold")
 
 
 
-class Menu_Item:
+class UI_Element:
 	
-	def __init__(self, parent_menu, callback, data):
-		self.contents = ""
-		self.text = Text()
-		self.parent_menu = parent_menu
-		self.is_active = False;
-		self.is_grayed = False;
-		self.callback = callback
-		self.data = data
+	def __init__(self, width = 0, height = 0):
+		self.bounds = engine.SRect(0, 0, width, height)
+		self.offset = (0, 0)
+		self.anchor = engine.Anchor.CENTER
+		self.parent = None
+		self.background_color = None
+		self.background_surface = None
 	
-	def get_color(self):
-		if self.is_grayed:
-			return GAME_FONT_COLOR_GRAYED
-		elif self.is_active:
-			return GAME_FONT_COLOR_ACTIVE
+	
+	def _get_parent_bounds(self):
+		if self.parent:
+			return self.parent.bounds
 		else:
-			return GAME_FONT_COLOR
+			return engine.screen_bounds
 	
-	def render_text(self):
-		font = self.parent_menu.item_font
-		self.text.render_with_font(self.contents, font, self.get_color())
 	
-	def set_contents(self, contents):
-		self.contents = contents
-		self.render_text()
-		self.parent_menu.has_been_resized = True
+	def _update_bounds_position(self):
+		ox, oy = self.offset
+		px, py = self._get_parent_bounds().get_pos(self.anchor)
+		self.bounds.set_pos((px + ox, py + oy), self.anchor)
+		# Extensions extend this
 	
-	def set_grayed(self, to_gray):
-		self.is_grayed = to_gray
-		self.render_text()
+	def _create_background(self, rect):
+		self.background_surface = pygame.Surface(rect.size, flags = pygame.SRCALPHA)
+		self.background_surface.fill(self.background_color)
 	
-	def set_active(self, to_active):
-		self.is_active = to_active
-		self.render_text()
+	def set_background(self, background_color = GAME_MENU_BG_COLOR):
+		self.background_color = background_color
+		if background_color:
+			self._create_background(self.bounds.toRect())
+	
+	
+	# UI_Group sets offsets and anchors of children directly, 
+	# doesn't use these methods
+	
+	def set_offset(self, offset):
+		if type(self.parent) is not UI_Group:
+			self.offset = offset
+			self._update_bounds_position()
+	
+	
+	def set_anchor(self, anchor):
+		if type(self.parent) is not UI_Group:
+			self.anchor = anchor
+			self._update_bounds_position()
+	
+	
+	def draw(self, destination_surface):
+		if self.background_color:
+			bounds_rect = self.bounds.toRect()
+			bg_rect = self.background_surface.get_rect()
+			if(bg_rect.size != bounds_rect.size):
+				self._create_background(bounds_rect)
+			destination_surface.blit(self.background_surface, bounds_rect)
+		# Extensions extend this
 
 
 
-def get_menu_item_anchor(menu_anchor):
+
+
+class UI_Frame(UI_Element):
+	
+	def __init__(self, width, height):
+		super().__init__(width, height)
+		children = []
+	
+	
+	def _update_bounds_position(self):
+		super()._update_bounds_position()
+		for child in self.children:
+			child._update_bounds_position()
+	
+	
+	def resize(self, size):
+		self.bounds.size = size
+		self._update_bounds_position()
+	
+	
+	def add_child(self, child):
+		if child.parent:
+			return
+		self.children.append(child)
+		child.parent = self
+		child._update_bounds_position()
+	
+	
+	def draw(self, destination_surface):
+		super().draw(destination_surface)
+		for child in self.children:
+			child.draw(destination_surface)
+
+
+
+
+
+def get_group_child_anchor(menu_anchor):
 	return engine.Anchor(int(menu_anchor) % 3)
 
-def get_menu_item_x(anchor, width):
-	return [0, width/2, width][int(anchor)]
 
-class Menu:
+def get_first_group_child_offset(anchor, bounds, p):
+	return ([p, 0, -p][int(anchor)], p)
+
+
+
+class UI_Group(UI_Element):
 	
-	def __init__(self, anchor = Anchor.TOP_LEFT, item_size = 0.18, 
-	             header_string = None, header_size = 0.22):
-		self.item_font = GAME_FONT.get_size(item_size)
-		self.location = Location((0, 0), anchor)
-		self.items = []
-		self.active_item_index = -1
-		self.surface = None
-		self.bounds = engine.SRect(0, 0, 0, 0)
+	def __init__(self, padding = DEFAULT_MENU_PADDING):
+		super().__init__()
+		self.children = []
+		self.padding = padding
+	
+	
+	def _update_bounds_position(self):
+		super()._update_bounds_position()
+		for child in self.children:
+			child._update_bounds_position()
+	
+	
+	def _arrange_children(self):
+		w = 0
+		h = 0
+		for child in self.children:
+			if child.bounds.width > w:
+				w = child.bounds.width
+			h += child.bounds.height
 		
-		if header_string:
-			header = Text()
-			header.set_anchor(get_menu_item_anchor(anchor))
-			header_font = GAME_FONT_BOLD.get_size(header_size)
-			header.render_with_font(header_string, header_font, GAME_FONT_COLOR)
-			
-			self.header_text = header
-			self.header_size = header.bounds.size
-			self.has_been_resized = True
-		else:
-			self.header_text = None
-			self.header_size = (0, 0)
-			self.has_been_resized = False
-	
-	
-	def add_item(self, callback = None, data = None):
-		item = Menu_Item(self, callback, data)
-		item.text.set_anchor(get_menu_item_anchor(self.location.anchor))
-		self.items.append(item)
-		self.has_been_resized = True
-		return item
-	
-	
-	def set_position(self, position):
-		self.location.position = position
-		set_rect_location(self.bounds, self.location)
-	
-	
-	def create_surface(self, width, height):
-		self.surface = pygame.Surface((width, height), pygame.SRCALPHA)
-	
-	def handle_resize(self):
-		width, height = self.header_size
-		y = height
-		height += (self.item_font.get_height() * len(self.items))
-		for item in self.items:
-			item_width = item.text.bounds.width
-			if item_width > width:
-				width = item_width
-		x = get_menu_item_x(get_menu_item_anchor(self.location.anchor), width)
-		item_height = self.item_font.get_height()
+		p = self.padding*2
+		self.bounds.size = (w + p, h + p)
+		super()._update_bounds_position()
 		
-		if self.header_text:
-			self.header_text.set_position((x, 0))
-		for item in self.items:
-			item.text.set_position((x, y))
-			y += item_height
-		
-		if not self.surface:
-			self.create_surface(width, height)
-		elif width > self.surface.get_width() or height > self.surface.get_height():
-			self.create_surface(width, height)
-		self.bounds.size = (width, height)
-		set_rect_location(self.bounds, self.location)
+		child_anchor = get_group_child_anchor(self.anchor)
+		x, y = get_first_group_child_offset(child_anchor, self.bounds, self.padding)
+		for child in self.children:
+			child.offset = (x, y)
+			child.anchor = child_anchor
+			child._update_bounds_position()
+			y += child.bounds.height
 	
 	
-	def draw(self, dest_surface):
-		if self.has_been_resized and (self.header_text or self.items):
-			self.handle_resize()
-			self.has_been_resized = False
-		elif not self.surface:
+	def add_child(self, child):
+		if child.parent or type(child) is UI_Group:
 			return
-		self.surface.fill((0, 0, 0, 0), special_flags = pygame.BLEND_RGBA_MIN)
-		if self.header_text:
-			self.header_text.draw(self.surface)
-		for item in self.items:
-			item.text.draw(self.surface)
-		dest_surface.blit(self.surface, self.bounds.toRect())
+		self.children.append(child)
+		child.parent = self
+		self._arrange_children()
 	
 	
-	def update(self, passthrough = None):
+	def draw(self, destination_surface):
+		super().draw(destination_surface)
+		for child in self.children:
+			child.draw(destination_surface)
+
+
+
+
+
+class UI_Text(UI_Element):
+	
+	# TODO: can I reuse code between this and UI_Text_Button?
+	
+	# returns engine width
+	def _render(self):
+		self.surface = self.font.render(self.text_string, True, self.color)
+		rect = self.surface.get_rect()
+		return self.height*(rect.width/rect.height)
+	
+	
+	# returns engine width
+	def _set_font_size(self, font_size):
+		self.font_size = font_size
+		# pygame seems to have an off-by-one error     VVV
+		self.font = self.font_sizer.get_size(font_size - 1) 
+		return self._render()
+	
+	
+	def __init__(self, text_string, height = DEFAULT_FONT_HEIGHT, 
+	             font = GAME_FONT, color = GAME_FONT_COLOR):
+		self.text_string = text_string
+		self.height = height
+		self.color = color
+		self.font_sizer = font
+		super().__init__(self._set_font_size(engine.to_pygame_units(height)), height)
+	
+	
+	def set_string(self, text_string):
+		self.text_string = text_string
+		self.bounds.width = self._render()
+		if type(self.parent) is UI_Group:
+			self.parent._arrange_children()
+		else:
+			self._update_bounds_position()
+	
+	
+	def draw(self, destination_surface):
+		super().draw(destination_surface)
+		font_size = engine.to_pygame_units(self.height)
+		if font_size != self.font_size:
+			self._set_font_size(font_size)
+		destination_surface.blit(self.surface, self.bounds.toRect())
+
+
+# class UI_Image(UI_Element)
+
+
+
+class UI_Menu_Item(UI_Element):
+	
+	def __init__(self, width = 0, height = 0):
+		super().__init__(width, height)
+		self.is_active = False
+		self.is_enabled = True
+	
+	
+	def set_active(self, is_active):
+		self.is_active = is_active
+		# Extensions override this
+	
+	
+	def set_enabled(self, is_enabled):
+		self.is_enabled = is_enabled
+		# Extensions override this
+	
+	
+	def update(self):
+		pass
+		# Extensions override this
+		# Planning on using this for things like sliders
+	
+	
+	def execute(self):
+		pass
+		# Extensions override this
+
+
+
+
+class UI_Text_Button(UI_Menu_Item):
+	
+	def __init__(self, text_string, height, font):
 		# TODO
-		# IMPORTANT NOTE: callbacks receive item and passthrough.
+		pass
+	
+	
+	def set_string(self, text_string):
+		# TODO
+		pass
+	
+	
+	def set_enabled(self, is_enabled):
+		# TODO
+		pass
+	
+	
+	def draw(self, destination_surface):
+		# TODO
 		pass
 
 
+
+# class UI_Image_Button(UI_Menu_Item)
+# class UI_Slider(UI_Menu_Item)
+
+
+
+
+class UI_Menu:
+	
+	def __init__(self):
+		self.items = []
+		self.active = -1
+	
+	
+	def add_item(self, item):
+		self.items.append(item)
+	
+	
+	def update(self):
+		# TODO
+		pass

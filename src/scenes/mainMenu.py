@@ -1,38 +1,33 @@
 import pygame
 import engine
 import scenes
-import pygame.font
 
 class MainMenuScene(engine.Scene):
 
 	def __init__(self):
-		self.menu = engine.Menu(anchor = engine.Anchor.CENTER, header_string = "Breakout")
+		self.title = engine.UI_Text("Breakout!", .3, engine.GAME_FONT_BOLD)
+		self.title.set_offset((0, -.2))
 		
-		play_item = self.menu.add_item()
-		play_item.set_contents("Play")
+		self.menu_group = engine.UI_Group()
+		self.menu_group.set_anchor(engine.Anchor.BOTTOM_RIGHT)
+		self.menu_group.set_offset((-.1, -.1))
+		self.menu_group.set_background()
 		
-		settings_item = self.menu.add_item()
-		settings_item.set_contents("Settings")
-		settings_item.set_grayed(True)
-		self.settings_item = settings_item
-		
-		quit_item = self.menu.add_item()
-		quit_item.set_contents("Quit")
+		self.menu_group.add_child(engine.UI_Text("Play"))
+		self.menu_group.add_child(engine.UI_Text("Settings"))
+		self.menu_group.add_child(engine.UI_Text("Credits"))
+		self.menu_group.add_child(engine.UI_Text("Quit"))
 
 
 	def update(self, delta):
 		#for now, just go straight to the play scene on any left click or enter
 		if engine.getClicks()[0] or engine.wasKeyPressed(pygame.K_RETURN): engine.switchScene(scenes.PlayScene())
-		# when G key is pressed, toggle grayness of settings menu item
-		if engine.wasKeyPressed(pygame.K_g):
-			self.settings_item.set_grayed(not self.settings_item.is_grayed)
 
 
 	def render(self, surface):
-		surface.fill((0, 0, 0, 255))
-		width, height = surface.get_size()
-		self.menu.set_position((width/2, height/2))
-		self.menu.draw(surface)
+		surface.fill((150, 150, 150, 255))
+		self.menu_group.draw(surface)
+		self.title.draw(surface)
 
 
 	def pause(self):
