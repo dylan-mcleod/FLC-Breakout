@@ -24,6 +24,7 @@ class SettingsScene(engine.Scene):
 		self.frame.add_child(group)
 		group.set_anchor(engine.Anchor.TOP_LEFT)
 		self.menu = engine.UI_Menu()
+		group.add_child(engine.UI_Text("Settings:", font = engine.GAME_FONT_BOLD))
 		
 		self.dummy_a = Dummy_Setting()
 		group.add_child(self.dummy_a)
@@ -42,7 +43,7 @@ class SettingsScene(engine.Scene):
 		self.frame.add_child(self.back_button)
 		self.menu.add_item(self.back_button)
 		self.back_button.set_anchor(engine.Anchor.BOTTOM_RIGHT)
-		self.back_button.set_offset((-engine.DEFAULT_MENU_PADDING, -engine.DEFAULT_MENU_PADDING,))
+		self.back_button.set_offset((-engine.DEFAULT_MENU_PADDING, -engine.DEFAULT_MENU_PADDING))
 
 
 	def update(self, delta):
