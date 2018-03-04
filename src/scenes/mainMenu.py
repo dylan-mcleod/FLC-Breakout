@@ -39,17 +39,11 @@ class MainMenuScene(engine.Scene):
 			engine.switchScene(scenes.SettingsScene())
 		elif self.credits_button.was_selected:
 			engine.switchScene(scenes.CreditsScene())
-		elif self.settings_button.was_selected:
-			# TODO quit
-			pass
-		
-		#for now, just go straight to the play scene on any left click or enter
-		#if engine.getClicks()[0] or engine.wasKeyPressed(pygame.K_RETURN): engine.switchScene(scenes.PlayScene())
+		elif self.quit_button.was_selected:
+			engine.exitScene()
 
 
 	def render(self, surface):
-		surface.fill((150, 150, 150, 255))
-		
 		surface.blit(engine.get_image("metal background"), pygame.Rect(0,0,1920,1080))
 		self.menu_group.draw(surface)
 		self.title.draw(surface)
@@ -57,3 +51,6 @@ class MainMenuScene(engine.Scene):
 
 	def pause(self):
 		pass
+
+
+

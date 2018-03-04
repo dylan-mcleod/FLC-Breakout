@@ -103,7 +103,7 @@ class PlayScene(engine.Scene):
 
 	def render(self, surface):
 
-		surface.fill((0,0,0))
+		surface.fill((100,100,100))
 		
 		for e in self.entities:
 			e.draw(surface)
