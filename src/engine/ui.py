@@ -355,11 +355,6 @@ class UI_Menu:
 			self.items[self.selected].was_selected = False
 			self.selected = -1
 		
-		if engine.wasKeyPressed(pygame.K_UP):
-			self._change_active(-1)
-		elif engine.wasKeyPressed(pygame.K_DOWN):
-			self._change_active(1)
-		
 		mouse_position = engine.getMousePosition()
 		mouse_overlapped = False
 		for i, item in enumerate(self.items):
@@ -370,6 +365,12 @@ class UI_Menu:
 					item.set_active(True)
 					self.active = i
 					break
+		
+		if not mouse_overlapped:
+			if engine.wasKeyPressed(pygame.K_UP):
+				self._change_active(-1)
+			elif engine.wasKeyPressed(pygame.K_DOWN):
+				self._change_active(1)
 		
 		ai = self.items[self.active]
 		ai.update()
