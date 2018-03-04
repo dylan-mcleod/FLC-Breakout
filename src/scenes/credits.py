@@ -19,7 +19,8 @@ class CreditsScene(engine.Scene):
 		
 		self.back_button = engine.UI_Text_Button("Back")
 		self.back_button.set_anchor(engine.Anchor.BOTTOM_RIGHT)
-		self.back_button.set_offset((-.1, -.1))
+		self.back_button.set_offset((-engine.DEFAULT_MENU_PADDING, -engine.DEFAULT_MENU_PADDING))
+		self.credits_frame.add_child(self.back_button)
 		self.menu = engine.UI_Menu()
 		self.menu.add_item(self.back_button)
 
