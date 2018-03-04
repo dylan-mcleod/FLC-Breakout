@@ -24,7 +24,7 @@ class SettingsScene(engine.Scene):
 		self.frame.add_child(group)
 		group.set_anchor(engine.Anchor.TOP_LEFT)
 		self.menu = engine.UI_Menu()
-		group.add_child(engine.UI_Text("Settings:", font = engine.GAME_FONT_BOLD))
+		group.add_child(engine.UI_Text("Settings:", .15, engine.GAME_FONT_BOLD))
 		
 		self.dummy_a = Dummy_Setting()
 		group.add_child(self.dummy_a)
