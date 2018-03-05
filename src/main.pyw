@@ -8,7 +8,6 @@ import os
 #load the (temporary?) background image ;)
 engine.load_image("metal background", os.path.join("backgrounds", "metal_background.jpg"))
 
-#for testing, can be removed
-
+#This ensures that only the main thread and primary script 
 if __name__ == "__main__":
-	engine.run(scenes.MainMenuScene())
+	engine.run(scenes.TitleScene())

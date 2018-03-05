@@ -1,10 +1,7 @@
 import pygame
 from enum import Enum
 
-
-
-
-#Le Anchor enum, created by Tau
+#Le Anchor enum - specifies relative position
 class Anchor(Enum):
 	TOP_LEFT      = 0
 	TOP_CENTER    = 1
@@ -22,7 +19,7 @@ class Anchor(Enum):
 #Behold the scaled rect!
 #A floating point python implementation of pygame.Rect, with some extra funtionality.
 #Supremely useful for everything but direct rendering.
-#TODO: Implement remaining methods provided by pygame.Rect
+#TODO: Implement remaining methods provided by pygame.Rect, like those with intersection.
 class SRect:
 
 	def __init__(self, x, y, w, h):
@@ -45,7 +42,8 @@ class SRect:
 
 	@classmethod
 	def fromRect(cls, rct):
-		return cls(rct.x, rct.y, rct.w, rct.h)
+		rct = rct.move(-window_center[0], -window_center[1])
+		return cls(rct.x / window_scale, rct.y / window_scale, rct.w / window_scale, rct.h / window_scale)
 
 	def __str__(self):
 		return "{}, {}, {}, {}".format(self.__x, self.__y, self.__w, self.__h)
@@ -79,8 +77,6 @@ class SRect:
 
 	def toRect(self):
 		return pygame.Rect(self.__x * window_scale, self.__y * window_scale, self.__w * window_scale, self.__h * window_scale).move(window_center[0], window_center[1])
-		#print(rct)
-		#return rct
 
 	#x
 	@property
@@ -265,7 +261,6 @@ def resize(size):
 	sw = window_dim[0] / window_scale / 2
 	sh = window_dim[1] / window_scale / 2
 	screen_bounds = SRect(-sw, -sh, 2*sw, 2*sh)
-	print(screen_bounds)
 
 def to_engine_units(pygame_units):
 	return pygame_units / window_scale
@@ -287,13 +282,3 @@ def get_window_bounds():
 
 def get_screen_bounds():
 	return screen_bounds
-
-"""def resize(size):
-	#window_dim = pygame.display.get_surface().get_size()
-	__window_dim = size
-	__window_center = (window_dim[0] / 2, window_dim[1] / 2)
-	__window_scale = min(window_center[0], window_center[1])
-	sw = window_dim[0] / window_scale / 2
-	sh = window_dim[1] / window_scale / 2
-
-	__screen_bounds = SRect(-sw, -sh, 2*sw, 2*sh)"""

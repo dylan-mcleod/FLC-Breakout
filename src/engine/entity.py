@@ -1,4 +1,5 @@
 import pygame
+import engine
 
 # Base class for all objects in the scene, including balls, bricks, and walls
 class Entity:
@@ -9,15 +10,16 @@ class Entity:
 
 		# bounding box for this Entity is considered to be equivalent the bounding box for the sprite
 		self.bounds = self.sprite.image.get_rect()
+		#self.bounds = engine.SRect.fromRect(self.sprite.image.get_rect())
 
 		# These two variables store x and y continuously (float), while bounds only stores integer precision (it's dumb but i didn't write pygame)
 		self.x = self.bounds.x
 		self.y = self.bounds.y
 
-		self.setVelocity(0,0)
+		self.set_velocity(0,0)
 
 
-	def setPosition(self, x, y):
+	def set_position(self, x, y):
 		self.x = x
 		self.y = y
 
@@ -32,7 +34,7 @@ class Entity:
 		self.bounds.y = self.y
 
 
-	def setVelocity(self, vx, vy):
+	def set_velocity(self, vx, vy):
 		self.vx = vx
 		self.vy = vy
 
@@ -48,6 +50,7 @@ class Entity:
 
 	def draw(self, surface):
 		surface.blit(self.sprite.image, self.bounds)
+		#surface.blit(self.sprite.image, self.bounds.toRect())
 
 
 	# Super special update function that you can overwrite as you please
@@ -66,8 +69,8 @@ class Entity:
 
 
 	# These functions do nothing, they must be implemented by children
-	def collideWithBall(self, ball):
+	def collide_with_ball(self, ball):
 		return
 
-	def collideWithPaddle(self, paddle):
+	def collide_with_paddle(self, paddle):
 		return

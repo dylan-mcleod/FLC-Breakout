@@ -5,26 +5,26 @@ import scenes
 class PauseScene(engine.Scene):
 
 	def __init__(self):
-		self.group = engine.UI_Group()
+		self.group = engine.UIGroup()
 		self.group.set_background()
-		self.group.add_child(engine.UI_Text("Paused", .15, engine.GAME_FONT_BOLD))
-		self.menu = engine.UI_Menu()
+		self.group.add_child(engine.UIText("Paused", .15, engine.GAME_FONT_BOLD))
+		self.menu = engine.UIMenu()
 		
-		self.resume_button = engine.UI_Text_Button("Resume")
+		self.resume_button = engine.UITextButton("Resume")
 		self.group.add_child(self.resume_button)
 		self.menu.add_item(self.resume_button)
 		
-		self.main_menu_button = engine.UI_Text_Button("Return to main menu")
+		self.main_menu_button = engine.UITextButton("Return to main menu")
 		self.group.add_child(self.main_menu_button)
 		self.menu.add_item(self.main_menu_button)
 
 
 	def update(self, delta):
 		self.menu.update()
-		if self.resume_button.was_selected or engine.wasKeyPressed(pygame.K_ESCAPE):
-			engine.exitScene()
+		if self.resume_button.was_selected or engine.was_key_pressed(pygame.K_ESCAPE):
+			engine.exit_scene()
 		elif self.main_menu_button.was_selected:
-			engine.replaceScene(scenes.MainMenuScene())
+			engine.replace_scene(scenes.TitleScene())
 
 
 

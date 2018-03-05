@@ -1,14 +1,18 @@
 import pygame
 import math
-import engine.scaling
+import engine.graphics
 
 #Not sure if this should be here.
 pygame.init()
-#Here for game engine only - do not use!
+
+#set the window caption
 pygame.display.set_caption("Breakout!")
+#set the window icon
+#pygame.display.set_icon(surface)
 starting_size = (1280, 720)
-gameScreen = pygame.display.set_mode(starting_size, pygame.RESIZABLE )
-engine.scaling.resize(starting_size)
+#Here for game engine only - do not use!
+gameScreen = pygame.display.set_mode(starting_size, pygame.RESIZABLE)
+engine.graphics.resize(starting_size)
 
 
 #Scene - a part of the game, such as the main menu or play screen.
@@ -21,20 +25,20 @@ class Scene:
 
 	def __del__(self):
 		"""Called on scene deletion (garbage collection). Here for debugging."""
-		#print("Scene {} deleted.".format(self.getName()))
+		#print("Scene {} deleted.".format(self.get_name()))
 		pass
 
-	def getName(self):
+	def get_name(self):
 		"""Here for naming purposes. Can be overridden for manual control over scene name."""
 		return self.__class__.__name__
 
 	def update(self, delta):
 		"""Update scene objects, check user input, etc."""
-		print("Scene {} has no update method!".format(self.getName()))
+		print("Scene {} has no update method!".format(self.get_name()))
 
 	def render(self):
 		"""Render scene objects, buttons, text, etc."""
-		print("Scene {} has no render method!".format(self.getName()))
+		print("Scene {} has no render method!".format(self.get_name()))
 
 	def pause(self):
 		"""Called when an external object wants the game to pause, like when FPS is too low."""
@@ -63,43 +67,43 @@ class SceneManager:
 		self.minFPS = 15
 		self.clock = pygame.time.Clock()
 	
-	def addScene(self, scene):
+	def add_scene(self, scene):
 		"""Adds a scene to the stack, useful in pause menus."""
-		print("Scene Manager: Adding {}.".format(scene.getName()))
-		self.silentAddScene(scene)
+		print("Scene Manager: Adding {}.".format(scene.get_name()))
+		self.silent_add_scene(scene)
 
-	def switchScene(self, scene):
+	def switch_scene(self, scene):
 		"""Switches current scene to another. Keeps stack."""
-		print("Scene Manager: Switching from {} to {}.".format(self.scenes[-1].getName() if self.scenes else "<None>", scene.getName()))
+		print("Scene Manager: Switching from {} to {}.".format(self.scenes[-1].get_name() if self.scenes else "<None>", scene.get_name()))
 		#get out of old scene
-		self.silentExitScene()
+		self.silent_exit_scene()
 		#add new scene
-		self.silentAddScene(scene)
+		self.silent_add_scene(scene)
 
-	def replaceScene(self, scene):
+	def replace_scene(self, scene):
 		"""Replaces current scenes with a scene. Clears stack."""
-		print("Scene Manager: Replacing to {}.".format(scene.getName()))
+		print("Scene Manager: Replacing to {}.".format(scene.get_name()))
 		#get out of old scene
 		while self.scenes:
-			self.silentExitScene()
+			self.silent_exit_scene()
 		#add new scene
-		self.silentAddScene(scene)
+		self.silent_add_scene(scene)
 
-	def exitScene(self):
+	def exit_scene(self):
 		"""Exits current scene."""
 		if(not self.scenes):
 			return
-		print("Scene Manager: Exiting {}.".format(self.scenes[-1].getName()))
-		self.silentExitScene()
+		print("Scene Manager: Exiting {}.".format(self.scenes[-1].get_name()))
+		self.silent_exit_scene()
 	
 	#Only for internal engine use, due to no debug print statements.
-	def silentAddScene(self, scene):
+	def silent_add_scene(self, scene):
 		#push the scene to the stack without replacing the top
 		self.scenes.append(scene)
 		self.screens.append(pygame.Surface(gameScreen.get_size(),pygame.SRCALPHA))
 
 	#Only for internal engine use, due to no debug print statements.
-	def silentExitScene(self):
+	def silent_exit_scene(self):
 		#protection for empty scene stack
 		if not self.scenes:
 			return
@@ -114,12 +118,12 @@ class SceneManager:
 
 		#start at provided scene if it exists
 		if(scene):
-			self.addScene(scene)
+			self.add_scene(scene)
 		#start the timer
 		self.clock.tick(60)
 		#encompass loop for easy exiting
 		try:
-			print(self.main_loop())
+			print("Scene Manager: Exiting game. Reason: {}.".format(self.main_loop()))
 			exit()
 		#Safely exited
 		except self.SafeExit as error:
@@ -136,7 +140,6 @@ class SceneManager:
 
 	def main_loop(self):
 		"""The main game loop."""
-
 		while(self.scenes):
 
 			#process events
@@ -147,11 +150,9 @@ class SceneManager:
 			# ticks targetFPS times per second, divided by 1000 to convert ms to s
 			delta = self.clock.tick(self.targetFPS) / 1000.0
 
-			if not self.scenes:
-				raise SafeExit("scene stack empty")
 			#protection against extremely low fps; pause if fps is below 
 			if delta > (1.0 / self.minFPS):
-				print("Scene Manager: Called scene ({}) pause() due to low FPS. Setting highest delta.".format(self.scenes[-1].getName()))
+				print("Scene Manager: Called scene ({}) pause() due to low FPS. Setting highest delta.".format(self.scenes[-1].get_name()))
 				self.scenes[-1].pause()
 				#set delta to highest allowed value for update protection
 				delta = 1.0 / self.minFPS
@@ -160,6 +161,9 @@ class SceneManager:
 
 			#try to update the current scene
 			self.scenes[-1].update(delta)
+			#right now this is the only leak, therefore it warrants a check here, but nowhere else.
+			if not self.scenes: break
+
 			#render the current scene
 			self.scenes[-1].render(self.screens[-1])
 
@@ -175,7 +179,7 @@ class SceneManager:
 			gamepadManager.update()
 
 			
-		return "No more scenes."
+		return "no more scenes"
 		#raise self.SafeExit("no more scenes")
 
 	def event_handler(self):
@@ -183,20 +187,16 @@ class SceneManager:
 
 		for evt in pygame.event.get():
 			if  (evt.type == pygame.QUIT):            return "Window closed."
-			elif(evt.type == pygame.MOUSEBUTTONUP):   return mouseManager.upEvent(evt)
-			elif(evt.type == pygame.MOUSEBUTTONDOWN): return mouseManager.downEvent(evt)
-			elif(evt.type == pygame.KEYDOWN):         return keyboardManager.downEvent(evt)
-			elif(evt.type == pygame.KEYUP):           return keyboardManager.upEvent(evt)
-			elif(evt.type == pygame.JOYAXISMOTION):   return gamepadManager.JOYAXISMOTION(evt)
-			elif(evt.type == pygame.JOYBALLMOTION):   return gamepadManager.JOYBALLMOTION(evt)
-			elif(evt.type == pygame.JOYHATMOTION):    return gamepadManager.JOYHATMOTION(evt)
-			elif(evt.type == pygame.JOYBUTTONUP):     return gamepadManager.JOYBUTTONUP(evt)
-			elif(evt.type == pygame.JOYBUTTONDOWN):   return gamepadManager.JOYBUTTONDOWN(evt)
+			elif(evt.type == pygame.MOUSEBUTTONUP):   return mouseManager.up_event(evt)
+			elif(evt.type == pygame.MOUSEBUTTONDOWN): return mouseManager.down_event(evt)
+			elif(evt.type == pygame.KEYDOWN):         return keyboardManager.down_event(evt)
+			elif(evt.type == pygame.KEYUP):           return keyboardManager.up_event(evt)
+			elif(evt.type == pygame.JOYAXISMOTION):   return gamepadManager.axis_motion_event(evt)
+			elif(evt.type == pygame.JOYBALLMOTION):   return gamepadManager.ball_motion_event(evt)
+			elif(evt.type == pygame.JOYHATMOTION):    return gamepadManager.hat_motion_event(evt)
+			elif(evt.type == pygame.JOYBUTTONUP):     return gamepadManager.button_up_event(evt)
+			elif(evt.type == pygame.JOYBUTTONDOWN):   return gamepadManager.button_down_event(evt)
 			elif(evt.type == pygame.VIDEORESIZE):     return self.resize_event(evt)
-
-	def emptyEventCallback(self, evt):
-		"""Intentionally does nothing."""
-		pass
 
 	def resize_event(self, evt):
 		"""Called when the screen is resized."""
@@ -204,11 +204,11 @@ class SceneManager:
 		#Log this event. It's a dangerous one.
 		print("Screen resized to: ({}, {}).".format(size[0], size[1]))
 		#TEMPORARY STUFFS
-		engine.scaling.resize(size)
-		#engine.screen_bounds = engine.scaling.interface.screen_bounds
-		#engine.window_scale = engine.scaling.interface.window_scale
-		#engine.window_bounds = engine.scaling.interface.window_bounds
-		#print(engine.scaling.interface.window_scale)
+		engine.graphics.resize(size)
+		#engine.screen_bounds = engine.graphics.interface.screen_bounds
+		#engine.window_scale = engine.graphics.interface.window_scale
+		#engine.window_bounds = engine.graphics.interface.window_bounds
+		#print(engine.graphics.interface.window_scale)
 		#update the display window size
 		pygame.display.set_mode(size, pygame.RESIZABLE )
 		#update (replace) scene screens
@@ -224,63 +224,63 @@ class SceneManager:
 class MouseManager:
 
 	def __init__(self):
-		self.mouseClicks = [[],[],[],[],[],[],[]]
-		self.mouseDowns = [(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1)]
-		self.virtualModeEnabled = False
-		self.relMovement = (0,0)
+		self.mouse_clicks = [[],[],[],[],[],[],[]]
+		self.mouse_downs = [(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1)]
+		self.virtual_mode_enabled = False
+		self.rel_movement = (0,0)
 
 	def update(self):
-		self.mouseClicks = [[],[],[],[],[],[],[]]
-		self.relMovement = pygame.mouse.get_rel()
-		if(self.virtualModeEnabled):
-			self.setMousePosition((0,0))
+		self.mouse_clicks = [[],[],[],[],[],[],[]]
+		self.rel_movement = pygame.mouse.get_rel()
+		if(self.virtual_mode_enabled):
+			self.set_mouse_position((0,0))
 			#setgameScreen.get_size() / 2
 
-	def downEvent(self, evt):
-		self.mouseDowns[evt.button - 1] = evt.pos
+	def down_event(self, evt):
+		self.mouse_downs[evt.button - 1] = evt.pos
 
-	def upEvent(self, evt):
+	def up_event(self, evt):
 		btn = evt.button - 1
-		if(evt.pos == self.mouseDowns[btn]):
-			self.mouseClicks[btn].append(evt.pos)
+		if(evt.pos == self.mouse_downs[btn]):
+			self.mouse_clicks[btn].append(evt.pos)
 
-	def getClicks(self):
+	def get_clicks(self):
 		"""Returns an array of arrays of tuples of mouse clicks since the last frame"""
-		return self.mouseClicks
+		return self.mouse_clicks
 
-	def getMousePosition(self):
+	def get_mouse_position(self):
 		"""Returns the current mouse position, as a tuple."""
 		return pygame.mouse.get_pos()
 
-	def setMousePosition(self, pos):
+	def set_mouse_position(self, pos):
 		"""Sets the mouse position. Ideally, should only be used with setMouseGrab(True)."""
 		return pygame.mouse.set_pos(pos[0], pos[1])
 
-	def getVirtualMode(self):
+	def get_virtual_mode(self):
 		"""Returns True if virtual mode is enabled."""
-		if((pygame.event.get_grab() != self.virtualModeEnabled) or (pygame.mouse.get_visible() != self.virtualModeEnabled)):
+		if((pygame.event.get_grab() != self.virtual_mode_enabled) or (pygame.mouse.get_visible() != self.virtual_mode_enabled)):
 			print("WARNING!: Invalid virtual mode state! Attempting to fix.")
-			self.setVirtualMode(self.virtualModeEnabled)
+			self.set_virtual_mode(self.virtual_mode_enabled)
 		return pygame.event.get_grab()
 
-	def getMouseMovement(self):
+	def get_mouse_movement(self):
 		"""Gets relative mouse movement since last frame."""
-		return self.relMovement
+		return self.rel_movement
 
-	def setVirtualMode(self, grb):
+	def set_virtual_mode(self, grb):
 		"""Sets virtual mode (True or False)."""
 		print("Virtual mode {}.".format("enabled" if grb else "disabled"))
 		pygame.event.set_grab(grb)
 		pygame.mouse.set_visible(not grb)
-		return self.getVirtualMode()
+		return self.get_virtual_mode()
 
-	def enterVirtualMode(self):
+	def enter_virtual_mode(self):
 		"""Enters virtual mode."""
-		return self.setVirtualMode(True)
+		return self.set_virtual_mode(True)
 
-	def leaveVirtualMode(self):
+	def leave_virtual_mode(self):
 		"""Leaves virtual mode."""
-		return self.setVirtualMode(False)
+		return self.set_virtual_mode(False)
 
 #Manages the keyboard.
 #Could use some additions/modifications.
@@ -295,17 +295,17 @@ class KeyboardManager:
 		self.state = pygame.key.get_pressed()
 		self.pressed = [False] * 512
 
-	def downEvent(self, evt):
+	def down_event(self, evt):
 		pass
 
-	def upEvent(self, evt):
+	def up_event(self, evt):
 		self.pressed[evt.key] = True
 
-	def isKeyDown(self, key):
+	def is_key_down(self, key):
 		"""Returns True if key is currently being pressed."""
 		return self.state[key]
 
-	def wasKeyPressed(self, key):
+	def was_key_pressed(self, key):
 		"""Returns True if the key was pressed last frame."""
 		return self.pressed[key]
 
@@ -320,19 +320,19 @@ class GamepadManager:
 	def update(self):
 		pass
 
-	def JOYAXISMOTION(self, evt):
+	def axis_motion_event(self, evt):
 		pass
 
-	def JOYBALLMOTION(self, evt):
+	def ball_motion_event(self, evt):
 		pass
 
-	def JOYHATMOTION(self, evt):
+	def hat_motion_event(self, evt):
 		pass
 
-	def JOYBUTTONUP(self, evt):
+	def button_up_event(self, evt):
 		pass
 
-	def JOYBUTTONDOWN(self, evt):
+	def button_down_event(self, evt):
 		pass
 
 mouseManager = MouseManager()

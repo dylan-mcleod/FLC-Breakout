@@ -3,7 +3,7 @@ import pygame
 
 
 
-class Font_Sizer:
+class FontSizer:
 	
 	def __init__(self, font_name):
 		self.font_name = font_name
@@ -17,8 +17,8 @@ class Font_Sizer:
 		return font
 
 
-GAME_FONT = Font_Sizer("Regular")
-GAME_FONT_BOLD = Font_Sizer("Bold")
+GAME_FONT = FontSizer("Regular")
+GAME_FONT_BOLD = FontSizer("Bold")
 
 GAME_FONT_COLOR          = (255, 255, 255)
 GAME_FONT_COLOR_ACTIVE   = (185, 185, 185)
@@ -36,7 +36,7 @@ def initialize_ui():
 
 
 
-class UI_Element:
+class UIElement:
 	
 	def __init__(self, width = 0, height = 0):
 		self.bounds = engine.SRect(0, 0, width, height)
@@ -60,17 +60,17 @@ class UI_Element:
 		# Extensions extend this
 	
 	
-	# UI_Group sets offsets and anchors of children directly, 
+	# UIGroup sets offsets and anchors of children directly, 
 	# doesn't use these methods
 	
 	def set_offset(self, offset):
-		if type(self.parent) is not UI_Group:
+		if type(self.parent) is not UIGroup:
 			self.offset = offset
 			self._update_bounds_position()
 	
 	
 	def set_anchor(self, anchor):
-		if type(self.parent) is not UI_Group:
+		if type(self.parent) is not UIGroup:
 			self.anchor = anchor
 			self._update_bounds_position()
 	
@@ -82,7 +82,7 @@ class UI_Element:
 
 
 
-class UI_Parent(UI_Element):
+class UIParent(UIElement):
 
 	def __init__(self, width = 0, height = 0):
 		self.children = []
@@ -127,7 +127,7 @@ class UI_Parent(UI_Element):
 
 
 
-class UI_Frame(UI_Parent):
+class UIFrame(UIParent):
 	
 	def resize(self, size):
 		self.bounds.size = size
@@ -153,7 +153,7 @@ def get_first_group_child_offset(anchor, bounds, p):
 
 
 
-class UI_Group(UI_Parent):
+class UIGroup(UIParent):
 	
 	def __init__(self, padding = DEFAULT_MENU_PADDING):
 		super().__init__()
@@ -170,7 +170,7 @@ class UI_Group(UI_Parent):
 		
 		p = self.padding*2
 		self.bounds.size = (w + p, h + p)
-		UI_Element._update_bounds_position(self)
+		UIElement._update_bounds_position(self)
 		
 		child_anchor = get_group_child_anchor(self.anchor)
 		x, y = get_first_group_child_offset(child_anchor, self.bounds, self.padding)
@@ -182,7 +182,7 @@ class UI_Group(UI_Parent):
 	
 	
 	def add_child(self, child):
-		if child.parent or type(child) is UI_Group:
+		if child.parent or type(child) is UIGroup:
 			return
 		self._add_child(child)
 		self._arrange_children()
@@ -191,7 +191,7 @@ class UI_Group(UI_Parent):
 
 
 
-class Text_Element:
+class TextElement:
 	
 	def __init__(self, text_string, font, color):
 		self.surface = font.render(text_string, True, color)
@@ -229,7 +229,7 @@ class Text_Base:
 	def set_string(self, text_string):
 		self.text_string = text_string
 		self.bounds.width = self._render()
-		if type(self.parent) is UI_Group:
+		if type(self.parent) is UIGroup:
 			self.parent._arrange_children()
 		else:
 			self._update_bounds_position()
@@ -244,10 +244,10 @@ class Text_Base:
 
 
 
-class UI_Text(UI_Element, Text_Base):
+class UIText(UIElement, Text_Base):
 	
 	def _render(self):
-		self.text = Text_Element(self.text_string, self.font, self.color)
+		self.text = TextElement(self.text_string, self.font, self.color)
 		return self.text.get_engine_width(self.height)
 	
 	
@@ -268,11 +268,11 @@ class UI_Text(UI_Element, Text_Base):
 
 
 
-# class UI_Image(UI_Element)
+# class UI_Image(UIElement)
 
 
 
-class UI_Menu_Item(UI_Element):
+class UIMenuItem(UIElement):
 	
 	def __init__(self, width = 0, height = 0):
 		super().__init__(width, height)
@@ -299,12 +299,12 @@ class UI_Menu_Item(UI_Element):
 
 
 
-class UI_Text_Button(UI_Menu_Item, Text_Base):
+class UITextButton(UIMenuItem, Text_Base):
 	
 	def _render(self):
-		self.inactive_text = Text_Element(self.text_string, self.font, GAME_FONT_COLOR)
-		self.active_text = Text_Element(self.text_string, self.font, GAME_FONT_COLOR_ACTIVE)
-		self.disabled_text = Text_Element(self.text_string, self.font, GAME_FONT_COLOR_DISABLED)
+		self.inactive_text = TextElement(self.text_string, self.font, GAME_FONT_COLOR)
+		self.active_text = TextElement(self.text_string, self.font, GAME_FONT_COLOR_ACTIVE)
+		self.disabled_text = TextElement(self.text_string, self.font, GAME_FONT_COLOR_DISABLED)
 		return self.inactive_text.get_engine_width(self.height)
 	
 	
@@ -323,13 +323,13 @@ class UI_Text_Button(UI_Menu_Item, Text_Base):
 
 
 
-# class UI_Image_Button(UI_Menu_Item)
-# class UI_Slider(UI_Menu_Item)
+# class UI_Image_Button(UIMenuItem)
+# class UI_Slider(UIMenuItem)
 
 
 
 
-class UI_Menu:
+class UIMenu:
 	
 	def __init__(self):
 		self.items = []
@@ -355,7 +355,7 @@ class UI_Menu:
 			self.items[self.selected].was_selected = False
 			self.selected = -1
 		
-		mouse_position = engine.getMousePosition()
+		mouse_position = engine.get_mouse_position()
 		mouse_overlapped = False
 		for i, item in enumerate(self.items):
 			if item.bounds.toRect().collidepoint(mouse_position):
@@ -367,20 +367,16 @@ class UI_Menu:
 					break
 		
 		if not mouse_overlapped:
-			if engine.wasKeyPressed(pygame.K_UP):
+			if engine.was_key_pressed(pygame.K_UP):
 				self._change_active(-1)
-			elif engine.wasKeyPressed(pygame.K_DOWN):
+			elif engine.was_key_pressed(pygame.K_DOWN):
 				self._change_active(1)
 		
 		ai = self.items[self.active]
 		ai.update()
 		if ai.is_enabled:
-			left_mouse_clicked = len(engine.getClicks()[0])
-			if engine.wasKeyPressed(pygame.K_RETURN) or \
+			left_mouse_clicked = len(engine.get_clicks()[0])
+			if engine.was_key_pressed(pygame.K_RETURN) or \
 			   (left_mouse_clicked and mouse_overlapped):
 				self.selected = self.active
 				ai.was_selected = True
-
-
-
-
