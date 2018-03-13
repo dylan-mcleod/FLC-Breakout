@@ -18,6 +18,8 @@ class Entity:
 
 		self.set_velocity(0,0)
 
+		self.set_id(-1)
+
 
 	def set_position(self, x, y):
 		self.x = x
@@ -37,6 +39,9 @@ class Entity:
 	def set_velocity(self, vx, vy):
 		self.vx = vx
 		self.vy = vy
+
+	def set_id(self, entity_id):
+		self.entity_id = entity_id
 
 
 
