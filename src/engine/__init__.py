@@ -3,6 +3,7 @@ import engine.entity
 import engine.ui
 import engine.graphics
 import engine.io
+import engine.collision
 
 #general class definitions
 engine.Scene = engine.core.Scene
@@ -72,5 +73,7 @@ engine.get_music = engine.io.assetManager.get_music
 #engine.AssetType = engine.io.AssetType
 #engine.add_asset = engine.io.assetManager.add_asset
 #engine.get_asset_path = engine.io.assetManager.get_asset_path
+
+engine.check_collide = engine.collision.check_collide
 
 engine.ui.initialize_ui()
